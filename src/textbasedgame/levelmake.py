@@ -2,7 +2,7 @@
 from PIL import Image
 
 
-def image_to_binary(image_path):
+def image_to_binary(image_path, location):
     # Open the image file
     image = Image.open(image_path)
 
@@ -25,7 +25,7 @@ def image_to_binary(image_path):
         binary_data.append(row)
 
     # Write the binary data to a file
-    with open("level2.txt", "w") as f:
+    with open(location, "w") as f:
         for row in binary_data:
             for pixel in row:
                 f.write("┃" if pixel == 1 else ".")
@@ -35,4 +35,5 @@ def image_to_binary(image_path):
     return binary_data
 
 
-print(image_to_binary("img.jpg"))
+image_to_binary("img.jpg", "level2.txt")
+print("Finished!")
