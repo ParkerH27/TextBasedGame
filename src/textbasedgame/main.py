@@ -163,6 +163,7 @@ def t4():
         time.sleep(0.5)
         toggletrap = 2
 
+
 if __name__ == "__main__":
     thread1 = threading.Thread(group=None, target=t1)
     thread2 = threading.Thread(group=None, target=t2)
