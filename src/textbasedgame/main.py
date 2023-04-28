@@ -6,37 +6,60 @@ from pathlib import Path
 import numpy as np
 from readchar import readchar
 
+width = 12
+
 
 def clear() -> None:
     """Clear the terminal."""
     print("\033[H\033[2J", end="", flush=True)
 
 
-def heartcount(heartlist, heartstring):
+with open("level1.txt", "r") as f:
+    lines = f.readlines()
+
+
+num_rows = len(lines)
+num_cols = max([len(line.strip()) for line in lines])
+
+
+lines = [line.strip().ljust(num_cols) for line in lines]
+
+
+arr = np.full((num_rows, num_cols), ".")
+
+for row in range(num_rows):
+    for col in range(num_cols):
+        arr[row][col] = lines[row][col]
+
+arr = np.char.replace(arr, ".", " ")
+
+heartstring = ""
+
+
+def heartcount(hearts):
     heartstring = ""
-    for _i in range(heartlist):
+    for i in range(hearts):
         heartstring += "♥"
     return heartstring
 
 
-def t1(
-    x,
-    y,
-    playerchar,
-    ox,
-    oy,
-    hearts,
-    screen,
-    grid,
-    smgrid,
-    width,
-    num_cols,
-    heartstring,
-    arr,
-):
-    heartstring = heartcount(hearts, heartstring)
+x = 1
+y = 1
+playerchar = ""
+ox = 0
+oy = 0
+hearts = 0
+screen = ""
+grid = np.array(arr, dtype=object)
+toggletrap = 0
+
+
+def t1():
+    global x, y, ox, oy, hearts, screen, heartstring
+    a = True
+    heartstring = heartcount(hearts)
     screen = heartstring
-    while True:
+    while a == True:
         if grid[y][x] == "♥":
             arr[y][x] = " "
             hearts += 1
@@ -82,7 +105,8 @@ def t1(
         time.sleep(0.05)
 
 
-def t2(x, y, playerchar):
+def t2():
+    global x, y, playerchar
     while True:
         rc = readchar()
         if rc == "w":
@@ -118,7 +142,7 @@ def t2(x, y, playerchar):
         time.sleep(0.05)
 
 
-def t3(grid, toggletrap):
+def t3():
     while True:
         # Get the location in the grid variable of all of the "▣" in the smgrid variable
         # find the indices of all "▣" in the smgrid
@@ -136,7 +160,8 @@ def t3(grid, toggletrap):
                 grid[i[0]][i[1] + 1] = "A"
 
 
-def t4(toggletrap):
+def t4():
+    global toggletrap
     while True:
         time.sleep(0.5)
         toggletrap = 1
@@ -144,81 +169,11 @@ def t4(toggletrap):
         toggletrap = 2
 
 
-def main():
-    p = Path(os.path.realpath(__file__)).parent
-    lvl1_file = p / "level1.txt"
-    with lvl1_file.open("r") as f:
-        lines = f.readlines()
-
-    width = 12
-    num_rows = len(lines)
-    num_cols = max([len(line.strip()) for line in lines])
-
-    lines = [line.strip().ljust(num_cols) for line in lines]
-
-    arr = np.full((num_rows, num_cols), ".")
-
-    for row in range(num_rows):
-        for col in range(num_cols):
-            arr[row][col] = lines[row][col]
-
-    arr = np.char.replace(arr, ".", " ")
-
-    heartstring = ""
-
-    x = 1
-    y = 1
-    playerchar = ""
-    ox = 0
-    oy = 0
-    hearts = 0
-    screen = ""
-    grid = np.array(arr, dtype=object)
-    smgrid = grid
-    toggletrap = 0
-
-    thread1 = threading.Thread(
-        group=None,
-        target=t1,
-        args=(
-            x,
-            y,
-            playerchar,
-            ox,
-            oy,
-            hearts,
-            screen,
-            grid,
-            smgrid,
-            width,
-            num_cols,
-            heartstring,
-            arr,
-        ),
-    )
-    thread2 = threading.Thread(
-        group=None,
-        target=t2,
-        args=(
-            x,
-            y,
-            playerchar,
-        ),
-    )
-    thread3 = threading.Thread(
-        group=None,
-        target=t3,
-        args=(
-            grid,
-            toggletrap,
-        ),
-    )
-    thread4 = threading.Thread(group=None, target=t4, args=(toggletrap,))
-    thread1.start()
-    thread2.start()
-    thread3.start()
-    thread4.start()
-
-
-if __name__ == "__main__":
-    main()
+thread1 = threading.Thread(group=None, target=t1)
+thread2 = threading.Thread(group=None, target=t2)
+thread3 = threading.Thread(group=None, target=t3)
+thread4 = threading.Thread(group=None, target=t4)
+thread1.start()
+thread2.start()
+thread3.start()
+thread4.start()
