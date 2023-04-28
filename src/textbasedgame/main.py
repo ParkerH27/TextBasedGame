@@ -21,7 +21,7 @@ with lvl1_file.open("r") as f:
 
 
 num_rows = len(lines)
-num_cols = max([len(line.strip()) for line in lines])
+num_cols = max(len(line.strip()) for line in lines)
 
 
 lines = [line.strip().ljust(num_cols) for line in lines]
@@ -39,9 +39,7 @@ heartstring = ""
 
 
 def heartcount(hearts):
-    heartstring = ""
-    for i in range(hearts):
-        heartstring += "♥"
+    heartstring = "".join("♥" for _i in range(hearts))
     return heartstring
 
 
@@ -77,31 +75,27 @@ def t1():
             grid[y][x] = playerchar
 
             grid[oy][ox] = arr[oy][ox]
-            str = ""
+            screenstr = ""
             nx = x - width
             ny = y - width
             px = x + width
             py = y + width
-            if nx < 0:
-                nx = 0
-            if ny < 0:
-                ny = 0
-            if px > num_cols:
-                px = num_cols
-            if py > num_cols:
-                py = num_cols
-            str += "╔" + ("═" * (px - abs(nx))) + "╗" + "\n"
+            nx = max(nx, 0)
+            ny = max(ny, 0)
+            px = min(px, num_cols)
+            py = min(py, num_cols)
+            screenstr += "╔" + ("═" * (px - abs(nx))) + "╗" + "\n"
             smgrid = grid[ny:py, nx:px]
             for i in smgrid:
-                str += "║"
-                str += "".join(i)
-                str += "║"
-                str += "\n"
-            str += "╚" + ("═" * (px - abs(nx))) + "╝"
-            str += "\n"
-            str += screen
-            str += "\n"
-            print(str)
+                screenstr += "║"
+                screenstr += "".join(i)
+                screenstr += "║"
+                screenstr += "\n"
+            screenstr += "╚" + ("═" * (px - abs(nx))) + "╝"
+            screenstr += "\n"
+            screenstr += screen
+            screenstr += "\n"
+            print(screenstr)
         ox = x
         oy = y
         time.sleep(0.05)
@@ -111,36 +105,35 @@ def t2():
     global x, y, playerchar
     while True:
         rc = readchar()
-        if rc == "w":
-            y -= 1
-            playerchar = "▲"
-        elif rc == "a":
-            x -= 1
-            playerchar = "◀"
-        elif rc == "s":
-            y += 1
-            playerchar = "▼"
-        elif rc == "d":
-            x += 1
-            playerchar = "▶"
-        elif rc == "z":
-            x -= 1
-            y += 1
-            playerchar = "◣"
-        elif rc == "e":
-            x += 1
-            y -= 1
-            playerchar = "◥"
-        elif rc == "q":
-            x -= 1
-            y -= 1
-            playerchar = "◤"
-        elif rc == "c":
-            x += 1
-            y += 1
-            playerchar = "◢"
-        else:
-            pass
+        match rc:
+            case "w":
+                y -= 1
+                playerchar = "▲"
+            case "a":
+                x -= 1
+                playerchar = "◀"
+            case "s":
+                y += 1
+                playerchar = "▼"
+            case "d":
+                x += 1
+                playerchar = "▶"
+            case "z":
+                x -= 1
+                y += 1
+                playerchar = "◣"
+            case "e":
+                x += 1
+                y -= 1
+                playerchar = "◥"
+            case "q":
+                x -= 1
+                y -= 1
+                playerchar = "◤"
+            case "c":
+                x += 1
+                y += 1
+                playerchar = "◢"
         time.sleep(0.05)
 
 
@@ -170,12 +163,12 @@ def t4():
         time.sleep(0.5)
         toggletrap = 2
 
-
-thread1 = threading.Thread(group=None, target=t1)
-thread2 = threading.Thread(group=None, target=t2)
-thread3 = threading.Thread(group=None, target=t3)
-thread4 = threading.Thread(group=None, target=t4)
-thread1.start()
-thread2.start()
-thread3.start()
-thread4.start()
+if __name__ == "__main__":
+    thread1 = threading.Thread(group=None, target=t1)
+    thread2 = threading.Thread(group=None, target=t2)
+    thread3 = threading.Thread(group=None, target=t3)
+    thread4 = threading.Thread(group=None, target=t4)
+    thread1.start()
+    thread2.start()
+    thread3.start()
+    thread4.start()
