@@ -14,7 +14,7 @@ def image_to_binary(image_path):
 
     # Get the image size
     width, height = image.size
-
+ 
     # Convert the pixel data to a 2D array of 1s and 0s
     binary_data = []
     for y in range(height):
