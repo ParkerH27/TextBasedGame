@@ -25,10 +25,10 @@ def image_to_binary(image_path):
         binary_data.append(row)
 
     # Write the binary data to a file
-    with open("level1.txt", "w") as f:
+    with open("level2.txt", "w") as f:
         for row in binary_data:
             for pixel in row:
-                f.write("╋" if pixel == 1 else " ")
+                f.write("┃" if pixel == 1 else ".")
             f.write("\n")
 
     # Return the binary data as a 2D array
