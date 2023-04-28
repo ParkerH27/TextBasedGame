@@ -1,5 +1,7 @@
+import os
 import threading
 import time
+from pathlib import Path
 
 import numpy as np
 from readchar import readchar
@@ -27,20 +29,18 @@ def t1(
     screen,
     grid,
     smgrid,
-    toggletrap,
     width,
     num_cols,
     heartstring,
-    heartcount,
     arr,
 ):
-    heartstring = heartcount(hearts)
+    heartstring = heartcount(hearts, heartstring)
     screen = heartstring
     while True:
         if grid[y][x] == "♥":
             arr[y][x] = " "
             hearts += 1
-            heartstring = heartcount(hearts)
+            heartstring = heartcount(hearts, heartstring)
             screen = heartstring
         if grid[y][x] != " " and grid[y][x] != "♥":
             x = ox
@@ -145,7 +145,9 @@ def t4(toggletrap):
 
 
 def main():
-    with open("level1.txt", "r") as f:
+    p = Path(os.path.realpath(__file__)).parent
+    lvl1_file = p / "level1.txt"
+    with lvl1_file.open("r") as f:
         lines = f.readlines()
 
     width = 12
@@ -188,11 +190,9 @@ def main():
             screen,
             grid,
             smgrid,
-            toggletrap,
             width,
             num_cols,
             heartstring,
-            hearts,
             arr,
         ),
     )
