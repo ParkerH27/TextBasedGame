@@ -24,6 +24,9 @@ replit-python-lsp-server = { extras = [
     "yapf",
 ], version = "^1.5.9" }
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires      = ["poetry-core>=1.0.0"]
