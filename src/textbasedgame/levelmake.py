@@ -25,7 +25,7 @@ def image_to_binary(image_path, location):
         binary_data.append(row)
 
     # Write the binary data to a file
-    with open(location, "w") as f:
+    with open(location, "w", encoding="utf-8") as f:
         for row in binary_data:
             for pixel in row:
                 f.write("┃" if pixel == 1 else ".")
