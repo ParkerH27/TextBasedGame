@@ -2,10 +2,14 @@ import threading
 import time
 
 import numpy as np
-import replit
 from readchar import readchar
 
 width = 12
+
+
+def clear() -> None:
+    """Clear the terminal."""
+    print("\033[H\033[2J", end="", flush=True)
 
 
 with open("level1.txt", "r") as f:
@@ -49,7 +53,7 @@ toggletrap = 0
 
 
 def t1():
-    global x, y, ox, oy, hearts, screen
+    global x, y, ox, oy, hearts, screen, heartstring
     a = True
     heartstring = heartcount(hearts)
     screen = heartstring
@@ -65,7 +69,7 @@ def t1():
             oy = 0
             ox = 0
         else:
-            replit.clear()
+            clear()
             grid[y][x] = playerchar
 
             grid[oy][ox] = arr[oy][ox]
@@ -163,10 +167,10 @@ def t4():
         toggletrap = 2
 
 
-thread1 = threading.Thread(target=t1)
-thread2 = threading.Thread(target=t2)
-thread3 = threading.Thread(target=t3)
-thread4 = threading.Thread(target=t4)
+thread1 = threading.Thread(group=None, target=t1)
+thread2 = threading.Thread(group=None, target=t2)
+thread3 = threading.Thread(group=None, target=t3)
+thread4 = threading.Thread(group=None, target=t4)
 thread1.start()
 thread2.start()
 thread3.start()
