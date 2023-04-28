@@ -1,23 +1,29 @@
 [tool.poetry]
-name = "python-template"
+authors = [
+    "Parker Hasenkamp <hasenkap@student.psdr3.org>",
+]
+description = "A game."
+name = "textbasedgame"
+packages = [
+    { include = "textbasedgame", from = "src" },
+]
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.10.0,<3.11"
-numpy = "^1.22.2"
-replit = "^3.2.4"
-Flask = "^2.2.0"
-urllib3 = "^1.26.12"
+Pillow   = "^9.5.0"
 colorama = "^0.4.6"
+python   = ">=3.10.0,<3.11"
 readchar = "^4.0.5"
-Pillow = "^9.5.0"
+replit   = "^3.2.4"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"
-replit-python-lsp-server = {extras = ["yapf", "rope", "pyflakes"], version = "^1.5.9"}
+replit-python-lsp-server = { extras = [
+    "pyflakes",
+    "rope",
+    "yapf",
+], version = "^1.5.9" }
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+requires      = ["poetry-core>=1.0.0"]
