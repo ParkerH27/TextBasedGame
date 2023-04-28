@@ -14,7 +14,9 @@ def clear() -> None:
     print("\033[H\033[2J", end="", flush=True)
 
 
-with open("level1.txt", "r") as f:
+p = Path(os.path.realpath(__file__)).parent
+lvl1_file = p / "level1.txt"
+with lvl1_file.open("r") as f:
     lines = f.readlines()
 
 
@@ -63,7 +65,7 @@ def t1():
         if grid[y][x] == "♥":
             arr[y][x] = " "
             hearts += 1
-            heartstring = heartcount(hearts, heartstring)
+            heartstring = heartcount(hearts)
             screen = heartstring
         if grid[y][x] != " " and grid[y][x] != "♥":
             x = ox
