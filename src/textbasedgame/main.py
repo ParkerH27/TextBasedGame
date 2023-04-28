@@ -6,12 +6,15 @@ from pathlib import Path
 import numpy as np
 from readchar import readchar
 
-width = 12
-
 
 def clear() -> None:
     """Clear the terminal."""
     print("\033[H\033[2J", end="", flush=True)
+
+
+def heartcount(hearts):
+    heartstring = "".join("♥" for _i in range(hearts))
+    return heartstring
 
 
 p = Path(os.path.realpath(__file__)).parent
@@ -19,6 +22,7 @@ lvl1_file = p / "level1.txt"
 with lvl1_file.open("r") as f:
     lines = f.readlines()
 
+width = 12
 
 num_rows = len(lines)
 num_cols = max(len(line.strip()) for line in lines)
@@ -37,12 +41,6 @@ arr = np.char.replace(arr, ".", " ")
 
 heartstring = ""
 
-
-def heartcount(hearts):
-    heartstring = "".join("♥" for _i in range(hearts))
-    return heartstring
-
-
 x = 1
 y = 1
 playerchar = ""
@@ -51,21 +49,18 @@ oy = 0
 hearts = 0
 screen = ""
 grid = np.array(arr, dtype=object)
-toggletrap = 0
+toggletrap = False
 
 
 def t1():
     global x, y, ox, oy, hearts, screen, heartstring
-    a = True
     heartstring = heartcount(hearts)
-    screen = heartstring
-    while a == True:
+    while True:
         if grid[y][x] == "♥":
             arr[y][x] = " "
             hearts += 1
             heartstring = heartcount(hearts)
-            screen = heartstring
-        if grid[y][x] != " " and grid[y][x] != "♥":
+        if grid[y][x] not in (" ", "♥"):
             x = ox
             y = oy
             oy = 0
@@ -76,14 +71,10 @@ def t1():
 
             grid[oy][ox] = arr[oy][ox]
             screenstr = ""
-            nx = x - width
-            ny = y - width
-            px = x + width
-            py = y + width
-            nx = max(nx, 0)
-            ny = max(ny, 0)
-            px = min(px, num_cols)
-            py = min(py, num_cols)
+            nx = max(x - width, 0)
+            ny = max(y - width, 0)
+            px = min(x + width, num_cols)
+            py = min(y + width, num_cols)
             screenstr += "╔" + ("═" * (px - abs(nx))) + "╗" + "\n"
             smgrid = grid[ny:py, nx:px]
             for i in smgrid:
@@ -93,7 +84,7 @@ def t1():
                 screenstr += "\n"
             screenstr += "╚" + ("═" * (px - abs(nx))) + "╝"
             screenstr += "\n"
-            screenstr += screen
+            screenstr += heartstring
             screenstr += "\n"
             print(screenstr)
         ox = x
@@ -147,10 +138,10 @@ def t3():
 
         # print the valid indices
         for i in indices:
-            if toggletrap == 1:
+            if toggletrap is False:
                 grid[i[0]][i[1] + 1] = "F"
                 grid[i[0]][i[1] - 1] = "B"
-            elif toggletrap == 2:
+            elif toggletrap is True:
                 grid[i[0]][i[1] - 1] = "V"
                 grid[i[0]][i[1] + 1] = "A"
 
@@ -159,9 +150,9 @@ def t4():
     global toggletrap
     while True:
         time.sleep(0.5)
-        toggletrap = 1
+        toggletrap = False
         time.sleep(0.5)
-        toggletrap = 2
+        toggletrap = True
 
 
 if __name__ == "__main__":
