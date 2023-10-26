@@ -155,7 +155,7 @@ def t4():
         toggletrap = True
 
 
-if __name__ == "__main__":
+def main():
     thread1 = threading.Thread(group=None, target=t1)
     thread2 = threading.Thread(group=None, target=t2)
     thread3 = threading.Thread(group=None, target=t3)
@@ -164,3 +164,7 @@ if __name__ == "__main__":
     thread2.start()
     thread3.start()
     thread4.start()
+
+
+if __name__ == "__main__":
+    main()

@@ -3,20 +3,20 @@ authors = [
     "Parker Hasenkamp <hasenkap@student.psdr3.org>",
 ]
 description = "A game."
-name = "textbasedgame"
+name = "text_based_game"
 packages = [
-    { include = "textbasedgame", from = "src" },
+    { include = "text_based_game", from = "src" },
 ]
 version = "0.1.0"
 
 [tool.poetry.dependencies]
-Pillow   = "^9.5.0"
+Pillow = "^9.5.0"
 colorama = "^0.4.6"
-numpy    = "^1.24.3"
-python   = ">=3.10.0,<3.11"
+numpy = "^1.24.3"
+python = ">=3.10.0,<3.12"
 readchar = "^4.0.5"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 debugpy = "^1.6.2"
 replit-python-lsp-server = { extras = [
     "pyflakes",
@@ -24,10 +24,21 @@ replit-python-lsp-server = { extras = [
     "yapf",
 ], version = "^1.5.9" }
 
-[tool.poetry.group.dev.dependencies]
-black = "^23.3.0"
-isort = "^5.12.0"
+[tool.poetry.scripts]
+text_based_game = "text_based_game.main:main"
+
+[tool.pyright]
+# https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+exclude = [".cache"]
+useLibraryCodeForTypes = true
+
+[tool.ruff]
+# https://docs.astral.sh/ruff/configuration/
+ignore = ["TD003", 'PLW0603', 'T201', 'W291', 'W292', 'W293']
+preview = true
+select = ["ALL"]
+
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires      = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0"]
