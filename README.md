@@ -1,3 +1,3 @@
 # TextBasedGame
 
-Terminal Game Made in Python.
+Terminal game made in Python.
