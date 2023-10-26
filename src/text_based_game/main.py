@@ -20,7 +20,7 @@ from rich import traceback
 
 def clear() -> None:
     """Clear the terminal."""
-    print("\033[H\033[2J", end="", flush=True)
+    print("\033c", end="", flush=True)
 
 
 def heartcount(hearts: int) -> str:
