@@ -15,6 +15,7 @@ from typing import Literal, NoReturn
 
 import numpy as np
 from readchar import readchar
+from rich import traceback
 
 
 def clear() -> None:
@@ -411,4 +412,5 @@ What do you do?
 
 
 if __name__ == "__main__":
+    traceback.install()
     main()
