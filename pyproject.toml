@@ -46,6 +46,7 @@ ignore = [
 ]
 preview = true
 select = ["ALL"]
+target-version = "py310"
 
 
 [build-system]

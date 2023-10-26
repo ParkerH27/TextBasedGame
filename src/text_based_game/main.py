@@ -4,8 +4,6 @@
 # ruff: noqa: PLW0603
 
 
-from __future__ import annotations
-
 import logging
 import os
 import sys
@@ -16,7 +14,8 @@ import numpy as np
 import readchar as rchar
 import trio
 from readchar import readchar
-from rich import progress, prompt, traceback
+from rich import live, markdown, panel, progress, prompt, traceback
+from rich.logging import RichHandler
 
 
 def clear() -> None:
@@ -35,13 +34,6 @@ async def tprint(text: str, sleep_time: float = 0.08) -> None:
         sys.stdout.write(character)
         sys.stdout.flush()
         await trio.sleep(sleep_time)
-
-
-async def tinput(text: str) -> str:
-    """Get input, typewriter style!"""
-    await tprint(text, sleep_time=0.05)
-
-    return input()
 
 
 x: int
@@ -74,6 +66,9 @@ level: int
 
 
 p = Path(os.path.realpath(__file__)).parent
+
+
+log = logging.getLogger("game")
 
 
 def open_level(level_path: Path) -> None:
@@ -133,10 +128,9 @@ def keycount(keys: int) -> str:
     return "".join([keycolor for _ in range(keys)])
 
 
-def scrprt(width: int) -> None:
+def scrprt(width: int) -> str:
     """Create the items bar."""
-    global screen
-    screen = heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
+    return heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
 async def cave_explore() -> None:
@@ -154,9 +148,12 @@ async def cave_explore() -> None:
     global ny
     global killthread
     global game
+    global screen
+
     heartstring = heartcount(items[0])
     keystring = keycount(items[1])
-    scrprt(px - abs(nx))
+    screen = scrprt(px - abs(nx))
+
     while not killthread:
         if items[0] == 0:
             await tprint("You died!")
@@ -165,49 +162,49 @@ async def cave_explore() -> None:
             arr[y][x] = " "
             items[0] += 1
             heartstring = heartcount(items[0])
-            scrprt(px - abs(nx))
+            screen = scrprt(px - abs(nx))
         elif grid[y][x] == keycolor:
             arr[y][x] = " "
             items[1] += 1
             keystring = keycount(items[1])
-            scrprt(px - abs(nx))
+            screen = scrprt(px - abs(nx))
         elif grid[y][x] == "☰":
             arr[y][x] = " "
             await tprint("You found a note!\n")
             await tprint(
                 """It reads:
  5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
- """,
+""",
             )
-            if "1" in input("Do you find and follow the river?\n1. Yes\n2. No\n>:"):
+            if prompt.Confirm.ask("Do you find and follow the river?"):
                 clear()
-                await tprint("You follow the river and find a cave.")
-                endroom()
+                await tprint("You follow the river and find a deep cave.")
+                await endroom()
         elif grid[y][x] == watercolor:
             game = False
             await tprint("")
             await tprint("")
-            if "1" in input("Follow the underground river?\n1. Yes\n2. No\n>:"):
+            if prompt.Confirm.ask("Follow the underground river?"):
                 clear()
-                print("You follow the river and find a cave.")
-                endroom()
+                await tprint("You follow the river and find a deep cave.")
+                await endroom()
             else:
                 game = True
         elif grid[y][x] == "∆":
             items[0] -= 1
             heartstring = heartcount(items[0])
-            scrprt(px - abs(nx))
+            screen = scrprt(px - abs(nx))
         elif grid[y][x] == "⊡":
             if items[1] > 0:
                 items[1] -= 1
-                scrprt(px - abs(nx))
+                screen = scrprt(px - abs(nx))
                 if level == 1:
                     await key()
                     game = True
             if level == 2:
                 await end()
 
-        scrprt(px - abs(nx))
+        screen = scrprt(px - abs(nx))
         if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
             x = ox
             y = oy
@@ -247,47 +244,47 @@ async def key() -> None:
     global killthread
     game = False
     killthread = True
-    await tprint(
+    await print_live_panel(
         """Door Opened!
 
 You find treasure behind the door.
 What do you do?
 
 1. Take the treasure.
-2. Leave the treasure and continue looking for the city.
-""",
+2. Leave the treasure and continue looking for the city.""",
     )
-    inpt = prompt.Confirm("What do you do?", choices=["1", "2"])
-    if inpt == "1":
-        await tprint("It was a trap! You died!")
-        sys.exit()
-    else:
-        await tprint(
-            """You continue looking for the city.
-You are tired, do you continue looking for the city or leave?
-1. Continue
-2. Leave""",
-        )
-        inpt2 = prompt.Confirm("What do you do?", choices=["1", "2"])
-
-        if "1" in str(inpt2):
-            endroom()
-        else:
-            await tprint("You leave the cave and go home.")
-            await tprint("You Loose!")
+    match prompt.IntPrompt.ask("What do you do?", choices=["1", "2"]):
+        case 1:
+            await tprint("It was a trap! You died!")
             sys.exit()
+        case 2:
+            await print_live_panel(
+                """You are tired, do you continue looking for the city or leave?
+1. Continue looking for the city.
+2. Leave.""",
+            )
+
+            match prompt.IntPrompt.ask("What do you do?", choices=["1", "2"]):
+                case 1:
+                    await endroom()
+
+                case 2:
+                    await tprint("You leave the cave and go home.")
+                    await tprint("You Loose!")
+                    sys.exit()
 
 
-def endroom() -> None:
+async def endroom() -> None:
     """Go to end room."""
-    end_cave_file = p / "endcave.txt"
-    open_level(end_cave_file)
-    print("You follow the river and find a deep cave.")
     global game
     global killthread
     global level
     global x
     global y
+
+    end_cave_file = p / "endcave.txt"
+    open_level(end_cave_file)
+
     game = True
     killthread = False
     x = 1
@@ -300,11 +297,12 @@ async def control() -> NoReturn:
     global x
     global y
     global playerchar
+
     while True:
-        logging.debug("Control")
+        log.debug("Control")
         while game:
-            logging.debug("on")
-            rc = readchar()
+            log.debug("on")
+            rc = await trio.to_thread.run_sync(readchar)
             match rc:
                 case "w":
                     y -= 1
@@ -345,9 +343,10 @@ async def end() -> NoReturn:
     """End the game as a winner."""
     global game
     global killthread
+
     game = True
     killthread = False
-    await tprint(
+    await print_live_panel(
         """Que cutscene!
 
 You Win!""",
@@ -358,39 +357,42 @@ You Win!""",
 async def main() -> None:
     """Run the game!"""
     global level
+
     for _ in progress.track(range(11), description="Starting..."):
         await trio.sleep(0.1)
-    await trio.sleep(3)
+    await trio.sleep(1)
     clear()
 
     level = 1
 
     start = False
     while not start:
-        await tprint(
+        await print_live_panel(
             """Welcome to the game!
-use wasd to move
-qezc to move diagonally
-Answer questions with number keys.
-(If the answer has no number, the last option will be the default)
-1. I understand
-2. I very clearly do not understand
-""",
-        )
-        inpt = prompt.Confirm.ask("Do you understand?")
+Things to note:
 
-        if inpt:
-            start = True
-    await tprint(
+- Use `w` `a` `s` `d` to move cardinally.
+- Use `q` `e` `z` `c` to move diagonally.
+- Answer questions with number keys.
+  (If the answer has no number, the last option will be the default)
+""",
+            title="Instructions",
+        )
+
+        start = prompt.Confirm.ask("Do you understand?")
+        clear()
+
+    await print_live_panel(
         """You just found a map to an ancient city in your grandfather's attic.
 What do you do?
-1. Follow the map
-2. Stay home and go to sleep
-3. Research about the city
-""",
+
+1. Follow the map.
+2. Stay home and go to sleep.
+3. Research about the city.""",
+        title="Introduction",
     )
-    inpt: int = prompt.IntPrompt("What do you do?", choices=["1", "2", "3"])()
-    match inpt:
+
+    match prompt.IntPrompt.ask("What do you do?", choices=["1", "2", "3"]):
         case 1:
             await tprint(
                 "You follow the map and find a cave entrance. You enter the cave.",
@@ -407,6 +409,28 @@ What do you do?
             await run_level(p / "city.txt")
 
 
+async def print_live_panel(
+    lines: str,
+    title: str | None = None,
+    interval: float = 0.8,
+) -> None:
+    """Print a rich live panel."""
+    lines_list = lines.splitlines()
+    text = lines_list[0]
+    with live.Live(
+        panel.Panel(text, title=title),
+    ) as pan:
+        for line in lines.splitlines()[1:]:
+            await trio.sleep(interval)
+            pan.update(
+                panel.Panel(
+                    markdown.Markdown(text := text + "\n" + line),
+                    title=title,
+                ),
+            )
+    await trio.sleep(interval)
+
+
 async def run_level(file: Path) -> None:
     """Run a level."""
     open_level(file)
@@ -417,5 +441,18 @@ async def run_level(file: Path) -> None:
 
 
 if __name__ == "__main__":
-    traceback.install(suppress=[trio, rchar])
+    logging.basicConfig(
+        level=100,
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[
+            RichHandler(
+                rich_tracebacks=True,
+                tracebacks_suppress=[trio, rchar],
+            ),
+        ],
+    )
+
+    clear()
+    traceback.install()
     trio.run(main)
