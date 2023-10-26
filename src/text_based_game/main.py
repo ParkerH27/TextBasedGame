@@ -207,12 +207,7 @@ def cave_explore() -> None:
                 end()
 
         scrprt(px - abs(nx))
-        if (
-            grid[y][x] != " "
-            and grid[y][x] != heartcolor
-            and grid[y][x] != keycolor
-            and grid[y][x] != "∆"
-        ):
+        if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
             x = ox
             y = oy
             oy = 0
