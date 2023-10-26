@@ -1,3 +1,9 @@
+"""A fun little text-based game."""
+
+
+# ruff: noqa: PLW0603
+
+
 from __future__ import annotations
 
 import os
@@ -5,7 +11,7 @@ import sys
 import threading
 import time
 from pathlib import Path
-from typing import Literal
+from typing import Literal, NoReturn
 
 import numpy as np
 from readchar import readchar
@@ -16,25 +22,24 @@ def clear() -> None:
     print("\033[H\033[2J", end="", flush=True)
 
 
-def heartcount(hearts):
-    heartstring = "".join("♥" for _i in range(hearts))
-    return heartstring
+def heartcount(hearts: int) -> str:
+    """Return a string of hearts."""
+    return "".join(["♥" for _i in range(hearts)])
 
 
-def tprint(text):
+def tprint(text: str, sleep_time: float = 0.08) -> None:
+    """Print a string, typewriter style!"""
     for character in text:
         sys.stdout.write(character)
         sys.stdout.flush()
-        time.sleep(0.08)
+        time.sleep(sleep_time)
 
 
-def tinput(text):
-    for character in text:
-        sys.stdout.write(character)
-        sys.stdout.flush()
-        time.sleep(0.05)
-    value = input()
-    return value
+def tinput(text: str) -> str:
+    """Get input, typewriter style!"""
+    tprint(text, sleep_time=0.05)
+
+    return input()
 
 
 x: int
@@ -69,20 +74,15 @@ level: int
 p = Path(os.path.realpath(__file__)).parent
 
 
-def open_level(levelPath: Path) -> None:
+def open_level(level_path: Path) -> None:
+    """Open a level file."""
     global x
     global y
     global playerchar
     global ox
     global oy
-    global px
-    global py
-    global nx
-    global ny
-    global items
     global screen
     global grid
-    global smgrid
     global toggletrap
     global num_rows
     global num_cols
@@ -92,8 +92,7 @@ def open_level(levelPath: Path) -> None:
     global keystring
     global heartstring
     global arr
-    global level
-    with levelPath.open("r") as f:
+    with level_path.open("r") as f:
         lines = f.readlines()
 
     num_rows = len(lines)
@@ -127,35 +126,24 @@ def open_level(levelPath: Path) -> None:
     toggletrap = 0
 
 
-def keycount(keys):
-    keystring = ""
-    for i in range(keys):
-        keystring += keycolor
-    return keystring
+def keycount(keys: int) -> str:
+    """Return a string of keys."""
+    return "".join([keycolor for _ in range(keys)])
 
 
-def scrprt(width):
+def scrprt(width: int) -> None:
+    """Create the items bar."""
     global screen
     screen = heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
-def cave_explo():
+def cave_explore() -> None:
+    """Explore the cave."""
     global x
     global y
-    global playerchar
     global ox
     global oy
-    global items
-    global screen
-    global grid
     global smgrid
-    global toggletrap
-    global heartcolor
-    global watercolor
-    global bgcolor
-    global keycolor
-    global num_cols
-    global num_rows
     global keystring
     global heartstring
     global px
@@ -164,12 +152,10 @@ def cave_explo():
     global ny
     global killthread
     global game
-    global arr
-    global level
     heartstring = heartcount(items[0])
     keystring = keycount(items[1])
     scrprt(px - abs(nx))
-    while killthread == False:
+    while not killthread:
         if items[0] == 0:
             print("You died!")
             sys.exit()
@@ -187,7 +173,9 @@ def cave_explo():
             arr[y][x] = " "
             tprint("You found a note!\n")
             tprint(
-                "It reads:\n 5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.\n"
+                """It reads:
+ 5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
+ """,
             )
             if "1" in input("Do you find and follow the river?\n1. Yes\n2. No\n>:"):
                 clear()
@@ -195,8 +183,8 @@ def cave_explo():
                 endroom()
         elif grid[y][x] == watercolor:
             game = False
-            print("")
-            print("")
+            print()
+            print()
             if "1" in input("Follow the underground river?\n1. Yes\n2. No\n>:"):
                 clear()
                 print("You follow the river and find a cave.")
@@ -256,29 +244,33 @@ def cave_explo():
     killthread = True
 
 
-def key():
+def key() -> None:
+    """Use the key."""
     global game
     global killthread
     game = False
     killthread = True
-    tprint("Door Opened!")
-    print()
-    tprint("You find treasure behind the door. What do you do?")
-    print("")
-    tprint("1. Take the treasure.")
-    print("")
-    tprint("2. Leave the treasure and continue looking for the city.")
-    inpt = input("\n:")
+    inpt = tinput(
+        """Door Opened!
+
+You find treasure behind the door.
+What do you do?
+
+1. Take the treasure.
+2. Leave the treasure and continue looking for the city.
+""",
+    )
     if "1" in str(inpt):
         tprint("It was a trap! You died!")
         sys.exit()
     else:
-        tprint("You continue looking for the city.")
-        tprint(
-            "You are tired, do you continue looking for the city or leave?\n1. Continue\n2. Leave"
+        inpt2 = tinput(
+            """You continue looking for the city.
+You are tired, do you continue looking for the city or leave?
+1. Continue
+2. Leave""",
         )
-        inpt = input("\n:")
-        if "1" in str(inpt):
+        if "1" in str(inpt2):
             endroom()
         else:
             tprint("You leave the cave and go home.")
@@ -286,7 +278,8 @@ def key():
             sys.exit()
 
 
-def endroom():
+def endroom() -> None:
+    """Go to end room."""
     end_cave_file = p / "endcave.txt"
     open_level(end_cave_file)
     print("You follow the river and find a deep cave.")
@@ -302,18 +295,11 @@ def endroom():
     level = 2
 
 
-def control():
+def control() -> NoReturn:
+    """Control the player."""
     global x
     global y
     global playerchar
-    global ox
-    global oy
-    global hearts
-    global screen
-    global grid
-    global smgrid
-    global toggletrap
-    global game
     while True:
         print("Control")
         while game:
@@ -355,11 +341,10 @@ def control():
             time.sleep(1)
 
 
-def end():
+def end() -> NoReturn:
+    """End the game as a winner."""
     global game
     global killthread
-    global x
-    global y
     game = True
     killthread = False
     tprint("Que cutscene!")
@@ -368,16 +353,13 @@ def end():
     sys.exit()
 
 
-def main():
+def main() -> None:
+    """Run the game!"""
     global level
     print("\n")
     tprint("Starting")
     time.sleep(0.4)
-    print(".", end="")
-    time.sleep(0.4)
-    print(".", end="")
-    time.sleep(0.4)
-    print(".")
+    tprint("...\n", sleep_time=0.4)
     time.sleep(0.9)
     tprint("-----------")
     time.sleep(0.2)
@@ -386,33 +368,39 @@ def main():
     time.sleep(3)
     level = 1
 
-    ce_thread = threading.Thread(target=cave_explo)
+    ce_thread = threading.Thread(target=cave_explore)
     control_thread = threading.Thread(target=control)
-    # thread3 = threading.Thread(target=t3)
-    # thread4 = threading.Thread(target=t4)ß
     start = False
     while not start:
         tprint("Welcome to the game!\n")
         inpt = tinput(
-            "use wasd to move\nqezc to move diagonally\nAnswer questions with number keys.(If the answer has no number, the last option will be the default)\n1. I understand\n2. I very clearly do not understand\n:"
+            """use wasd to move
+qezc to move diagonally
+Answer questions with number keys.
+(If the answer has no number, the last option will be the default)
+1. I understand
+2. I very clearly do not understand
+:""",
         )
         if "1" in str(inpt):
             start = True
-    tprint("You just found a map to an ancient city in your grandfathers attic.")
     inpt = tinput(
-        "What do you do?\n1. Follow the map\n2. Stay home and go to sleep\n3. Research about the city\n:"
+        """You just found a map to an ancient city in your grandfather's attic.
+What do you do?
+1. Follow the map
+2. Stay home and go to sleep
+3. Research about the city
+:""",
     )
     if "1" in str(inpt):
         lvl1_file = p / "level1.txt"
         open_level(lvl1_file)
-        tprint("You follow the map and find a cave entrance.")
-        tprint("You enter the cave.")
+        tprint("You follow the map and find a cave entrance. You enter the cave.")
         time.sleep(2)
         ce_thread.start()
         control_thread.start()
     elif "2" in str(inpt):
-        tprint("You go to sleep")
-        tprint("You are The Real Winner!")
+        tprint("You go to sleep. You are The Real Winner!")
         sys.exit()
     else:
         city_file = p / "city.txt"

@@ -1,8 +1,16 @@
 """Connected component labeling—img to level."""
+
+from __future__ import annotations
+
+import logging
+import os
+from pathlib import Path
+
 from PIL import Image
 
 
-def image_to_binary(image_path, location):
+def image_to_binary(image_path: Path, location: Path) -> list[list[bool]]:
+    """Convert an image to a binary array."""
     # Open the image file
     image = Image.open(image_path)
 
@@ -10,30 +18,34 @@ def image_to_binary(image_path, location):
     image = image.convert("1")
 
     # Get the pixel data as a list of tuples
-    pixel_data = list(image.getdata())
+    pixel_data: list[int] = list(image.getdata())
 
     # Get the image size
     width, height = image.size
 
     # Convert the pixel data to a 2D array of 1s and 0s
-    binary_data = []
+    binary_data: list[list[bool]] = []
     for y in range(height):
-        row = []
+        row: list[bool] = []
         for x in range(width):
             pixel = pixel_data[y * width + x]
-            row.append(int(pixel == 0))
+            row.append(pixel == 0)
         binary_data.append(row)
 
     # Write the binary data to a file
-    with open(location, "w", encoding="utf-8") as f:
+    with location.open("w", encoding="utf-8") as f:
         for row in binary_data:
             for pixel in row:
-                f.write("┃" if pixel == 1 else ".")
+                f.write("╋" if pixel == 1 else " ")
             f.write("\n")
 
     # Return the binary data as a 2D array
     return binary_data
 
 
-image_to_binary("img.jpg", "level2.txt")
-print("Finished!")
+p = Path(os.path.realpath(__file__)).parent
+lvl2_file = p / "level2.txt"
+img = p / "img.jpg"
+
+image_to_binary(img, lvl2_file)
+logging.info("Finished!")

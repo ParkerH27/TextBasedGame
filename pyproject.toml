@@ -23,6 +23,7 @@ replit-python-lsp-server = { extras = [
     "rope",
     "yapf",
 ], version = "^1.5.9" }
+ruff = "^0.1.2"
 
 [tool.poetry.scripts]
 text_based_game = "text_based_game.main:main"
@@ -34,7 +35,14 @@ useLibraryCodeForTypes = true
 
 [tool.ruff]
 # https://docs.astral.sh/ruff/configuration/
-ignore = ["TD003", 'PLW0603', 'T201', 'W291', 'W292', 'W293']
+ignore = [
+    "CPY001",
+    "D211",
+    "D213",
+    "D400",
+    "T201",
+    "TD003",
+]
 preview = true
 select = ["ALL"]
 
