@@ -6,16 +6,17 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
-import threading
-import time
 from pathlib import Path
 from typing import Literal, NoReturn
 
 import numpy as np
+import readchar as rchar
+import trio
 from readchar import readchar
-from rich import traceback
+from rich import progress, prompt, traceback
 
 
 def clear() -> None:
@@ -25,20 +26,20 @@ def clear() -> None:
 
 def heartcount(hearts: int) -> str:
     """Return a string of hearts."""
-    return "".join(["♥" for _i in range(hearts)])
+    return "".join(["♥" for _ in range(hearts)])
 
 
-def tprint(text: str, sleep_time: float = 0.08) -> None:
+async def tprint(text: str, sleep_time: float = 0.08) -> None:
     """Print a string, typewriter style!"""
     for character in text:
         sys.stdout.write(character)
         sys.stdout.flush()
-        time.sleep(sleep_time)
+        await trio.sleep(sleep_time)
 
 
-def tinput(text: str) -> str:
+async def tinput(text: str) -> str:
     """Get input, typewriter style!"""
-    tprint(text, sleep_time=0.05)
+    await tprint(text, sleep_time=0.05)
 
     return input()
 
@@ -138,7 +139,7 @@ def scrprt(width: int) -> None:
     screen = heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
-def cave_explore() -> None:
+async def cave_explore() -> None:
     """Explore the cave."""
     global x
     global y
@@ -158,7 +159,7 @@ def cave_explore() -> None:
     scrprt(px - abs(nx))
     while not killthread:
         if items[0] == 0:
-            print("You died!")
+            await tprint("You died!")
             sys.exit()
         if grid[y][x] == heartcolor:
             arr[y][x] = " "
@@ -172,20 +173,20 @@ def cave_explore() -> None:
             scrprt(px - abs(nx))
         elif grid[y][x] == "☰":
             arr[y][x] = " "
-            tprint("You found a note!\n")
-            tprint(
+            await tprint("You found a note!\n")
+            await tprint(
                 """It reads:
  5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
  """,
             )
             if "1" in input("Do you find and follow the river?\n1. Yes\n2. No\n>:"):
                 clear()
-                print("You follow the river and find a cave.")
+                await tprint("You follow the river and find a cave.")
                 endroom()
         elif grid[y][x] == watercolor:
             game = False
-            print()
-            print()
+            await tprint("")
+            await tprint("")
             if "1" in input("Follow the underground river?\n1. Yes\n2. No\n>:"):
                 clear()
                 print("You follow the river and find a cave.")
@@ -201,10 +202,10 @@ def cave_explore() -> None:
                 items[1] -= 1
                 scrprt(px - abs(nx))
                 if level == 1:
-                    key()
+                    await key()
                     game = True
             if level == 2:
-                end()
+                await end()
 
         scrprt(px - abs(nx))
         if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
@@ -235,18 +236,18 @@ def cave_explore() -> None:
             print(screenstr)
         ox = x
         oy = y
-        time.sleep(0.05)
+        await trio.sleep(0.05)
     clear()
     killthread = True
 
 
-def key() -> None:
+async def key() -> None:
     """Use the key."""
     global game
     global killthread
     game = False
     killthread = True
-    inpt = tinput(
+    await tprint(
         """Door Opened!
 
 You find treasure behind the door.
@@ -256,21 +257,24 @@ What do you do?
 2. Leave the treasure and continue looking for the city.
 """,
     )
-    if "1" in str(inpt):
-        tprint("It was a trap! You died!")
+    inpt = prompt.Confirm("What do you do?", choices=["1", "2"])
+    if inpt == "1":
+        await tprint("It was a trap! You died!")
         sys.exit()
     else:
-        inpt2 = tinput(
+        await tprint(
             """You continue looking for the city.
 You are tired, do you continue looking for the city or leave?
 1. Continue
 2. Leave""",
         )
+        inpt2 = prompt.Confirm("What do you do?", choices=["1", "2"])
+
         if "1" in str(inpt2):
             endroom()
         else:
-            tprint("You leave the cave and go home.")
-            tprint("You Loose!")
+            await tprint("You leave the cave and go home.")
+            await tprint("You Loose!")
             sys.exit()
 
 
@@ -291,15 +295,15 @@ def endroom() -> None:
     level = 2
 
 
-def control() -> NoReturn:
+async def control() -> NoReturn:
     """Control the player."""
     global x
     global y
     global playerchar
     while True:
-        print("Control")
+        logging.debug("Control")
         while game:
-            print("on")
+            logging.debug("on")
             rc = readchar()
             match rc:
                 case "w":
@@ -332,80 +336,86 @@ def control() -> NoReturn:
                     playerchar = "◢"
                 case _:
                     pass
-            time.sleep(0.05)
+            await trio.sleep(0.05)
         while not game:
-            time.sleep(1)
+            await trio.sleep(1)
 
 
-def end() -> NoReturn:
+async def end() -> NoReturn:
     """End the game as a winner."""
     global game
     global killthread
     game = True
     killthread = False
-    tprint("Que cutscene!")
-    print()
-    tprint("You Win!")
+    await tprint(
+        """Que cutscene!
+
+You Win!""",
+    )
     sys.exit()
 
 
-def main() -> None:
+async def main() -> None:
     """Run the game!"""
     global level
-    print("\n")
-    tprint("Starting")
-    time.sleep(0.4)
-    tprint("...\n", sleep_time=0.4)
-    time.sleep(0.9)
-    tprint("-----------")
-    time.sleep(0.2)
+    for _ in progress.track(range(11), description="Starting..."):
+        await trio.sleep(0.1)
+    await trio.sleep(3)
     clear()
 
-    time.sleep(3)
     level = 1
 
-    ce_thread = threading.Thread(target=cave_explore)
-    control_thread = threading.Thread(target=control)
     start = False
     while not start:
-        tprint("Welcome to the game!\n")
-        inpt = tinput(
-            """use wasd to move
+        await tprint(
+            """Welcome to the game!
+use wasd to move
 qezc to move diagonally
 Answer questions with number keys.
 (If the answer has no number, the last option will be the default)
 1. I understand
 2. I very clearly do not understand
-:""",
+""",
         )
-        if "1" in str(inpt):
+        inpt = prompt.Confirm.ask("Do you understand?")
+
+        if inpt:
             start = True
-    inpt = tinput(
+    await tprint(
         """You just found a map to an ancient city in your grandfather's attic.
 What do you do?
 1. Follow the map
 2. Stay home and go to sleep
 3. Research about the city
-:""",
+""",
     )
-    if "1" in str(inpt):
-        lvl1_file = p / "level1.txt"
-        open_level(lvl1_file)
-        tprint("You follow the map and find a cave entrance. You enter the cave.")
-        time.sleep(2)
-        ce_thread.start()
-        control_thread.start()
-    elif "2" in str(inpt):
-        tprint("You go to sleep. You are The Real Winner!")
-        sys.exit()
-    else:
-        city_file = p / "city.txt"
-        open_level(city_file)
-        tprint("You decide to research about the city.")
-        ce_thread.start()
-        control_thread.start()
+    inpt: int = prompt.IntPrompt("What do you do?", choices=["1", "2", "3"])()
+    match inpt:
+        case 1:
+            await tprint(
+                "You follow the map and find a cave entrance. You enter the cave.",
+            )
+            await trio.sleep(2)
+            await run_level(p / "level1.txt")
+        case 2:
+            await tprint("You go to sleep. You are The Real Winner!")
+            await trio.sleep(2)
+            sys.exit()
+        case 3:
+            await tprint("You decide to research about the city.")
+            await trio.sleep(2)
+            await run_level(p / "city.txt")
+
+
+async def run_level(file: Path) -> None:
+    """Run a level."""
+    open_level(file)
+
+    async with trio.open_nursery() as nursery:
+        nursery.start_soon(cave_explore)
+        nursery.start_soon(control)
 
 
 if __name__ == "__main__":
-    traceback.install()
-    main()
+    traceback.install(suppress=[trio, rchar])
+    trio.run(main)
