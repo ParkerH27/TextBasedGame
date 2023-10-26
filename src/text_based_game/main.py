@@ -25,7 +25,7 @@ with lvl1_file.open("r") as f:
 width = 12
 
 num_rows = len(lines)
-num_cols = max(len(line.strip()) for line in lines)
+num_cols = max([len(line.strip()) for line in lines])
 
 
 lines = [line.strip().ljust(num_cols) for line in lines]
@@ -49,17 +49,21 @@ oy = 0
 hearts = 0
 screen = ""
 grid = np.array(arr, dtype=object)
-toggletrap = False
+toggletrap = 1
 
 
 def t1():
     global x, y, ox, oy, hearts, screen, heartstring
     heartstring = heartcount(hearts)
-    while True:
+    screen = heartstring
+
+    a = True
+    while a:
         if grid[y][x] == "♥":
             arr[y][x] = " "
             hearts += 1
             heartstring = heartcount(hearts)
+            screen = heartstring
         if grid[y][x] not in (" ", "♥"):
             x = ox
             y = oy
@@ -84,7 +88,7 @@ def t1():
                 screenstr += "\n"
             screenstr += "╚" + ("═" * (px - abs(nx))) + "╝"
             screenstr += "\n"
-            screenstr += heartstring
+            screenstr += screen
             screenstr += "\n"
             print(screenstr)
         ox = x
@@ -125,10 +129,13 @@ def t2():
                 x += 1
                 y += 1
                 playerchar = "◢"
+            case _:
+                pass
         time.sleep(0.05)
 
 
 def t3():
+    global grid
     while True:
         # Get the location in the grid variable of all of the "▣" in the smgrid variable
         # find the indices of all "▣" in the smgrid
@@ -138,10 +145,10 @@ def t3():
 
         # print the valid indices
         for i in indices:
-            if toggletrap is False:
+            if toggletrap == 1:
                 grid[i[0]][i[1] + 1] = "F"
                 grid[i[0]][i[1] - 1] = "B"
-            elif toggletrap is True:
+            elif toggletrap == 2:
                 grid[i[0]][i[1] - 1] = "V"
                 grid[i[0]][i[1] + 1] = "A"
 
@@ -150,9 +157,9 @@ def t4():
     global toggletrap
     while True:
         time.sleep(0.5)
-        toggletrap = False
+        toggletrap = 1
         time.sleep(0.5)
-        toggletrap = True
+        toggletrap = 2
 
 
 def main():
