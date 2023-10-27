@@ -27,7 +27,8 @@ replit-python-lsp-server = { extras = [
 ruff = "^0.1.2"
 
 [tool.poetry.scripts]
-text_based_game = "text_based_game.main:main"
+level_make = "text_based_game.levelmake:run"
+text_based_game = "text_based_game.main:run"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
