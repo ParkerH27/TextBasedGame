@@ -19,6 +19,12 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import track
 from rich.prompt import Confirm, IntPrompt
+from trio import Lock
+
+DEBUG = False  # Speed up animations for debugging
+
+if DEBUG:
+    import trio.testing
 
 
 def clear() -> None:
@@ -136,7 +142,7 @@ def scrprt(width: int) -> str:
     return heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
-async def cave_explore() -> None:
+async def cave_explore(lock: Lock) -> None:
     """Explore the cave."""
     global x
     global y
@@ -153,9 +159,10 @@ async def cave_explore() -> None:
     global game
     global screen
 
-    heartstring = heartcount(items[0])
-    keystring = keycount(items[1])
-    screen = scrprt(px - abs(nx))
+    async with lock:
+        heartstring = heartcount(items[0])
+        keystring = keycount(items[1])
+        screen = scrprt(px - abs(nx))
 
     while not killthread:
         if items[0] == 0:
@@ -176,8 +183,8 @@ async def cave_explore() -> None:
             await tprint("You found a note!\n")
             await tprint(
                 """It reads:
- 5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
-""",
+    5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
+    """,
             )
             if Confirm.ask("Do you find and follow the river?"):
                 clear()
@@ -202,10 +209,10 @@ async def cave_explore() -> None:
                 items[1] -= 1
                 screen = scrprt(px - abs(nx))
                 if level == 1:
-                    await key()
+                    await key(lock=lock)
                     game = True
             if level == 2:
-                await end()
+                await end(lock=lock)
 
         screen = scrprt(px - abs(nx))
         if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
@@ -241,12 +248,13 @@ async def cave_explore() -> None:
     killthread = True
 
 
-async def key() -> None:
+async def key(lock: Lock) -> None:
     """Use the key."""
     global game
     global killthread
-    game = False
-    killthread = True
+    async with lock:
+        game = False
+        killthread = True
     await print_live_panel(
         """Door Opened!
 
@@ -294,7 +302,7 @@ def endroom() -> None:
     level = 2
 
 
-async def control() -> NoReturn:
+async def control(lock: Lock) -> NoReturn:
     """Control the player."""
     global x
     global y
@@ -307,33 +315,41 @@ async def control() -> NoReturn:
             rc = await trio.to_thread.run_sync(readchar.readchar)
             match rc:
                 case "w":
-                    y -= 1
-                    playerchar = "▲"
+                    async with lock:
+                        y -= 1
+                        playerchar = "▲"
                 case "a":
-                    x -= 1
-                    playerchar = "◀"
+                    async with lock:
+                        x -= 1
+                        playerchar = "◀"
                 case "s":
-                    y += 1
-                    playerchar = "▼"
+                    async with lock:
+                        y += 1
+                        playerchar = "▼"
                 case "d":
-                    x += 1
-                    playerchar = "▶"
+                    async with lock:
+                        x += 1
+                        playerchar = "▶"
                 case "z":
-                    x -= 1
-                    y += 1
-                    playerchar = "◣"
+                    async with lock:
+                        x -= 1
+                        y += 1
+                        playerchar = "◣"
                 case "e":
-                    x += 1
-                    y -= 1
-                    playerchar = "◥"
+                    async with lock:
+                        x += 1
+                        y -= 1
+                        playerchar = "◥"
                 case "q":
-                    x -= 1
-                    y -= 1
-                    playerchar = "◤"
+                    async with lock:
+                        x -= 1
+                        y -= 1
+                        playerchar = "◤"
                 case "c":
-                    x += 1
-                    y += 1
-                    playerchar = "◢"
+                    async with lock:
+                        x += 1
+                        y += 1
+                        playerchar = "◢"
                 case _:
                     pass
             await trio.sleep(0.05)
@@ -341,13 +357,14 @@ async def control() -> NoReturn:
             await trio.sleep(1)
 
 
-async def end() -> NoReturn:
+async def end(lock: Lock) -> NoReturn:
     """End the game as a winner."""
     global game
     global killthread
 
-    game = True
-    killthread = False
+    async with lock:
+        game = True
+        killthread = False
     await print_live_panel(
         """Cue cutscene!
 
@@ -438,15 +455,20 @@ async def run_level(file: Path) -> None:
     """Run a level."""
     open_level(file)
 
+    lock = Lock()
+
     async with trio.open_nursery() as nursery:
-        nursery.start_soon(cave_explore)
-        nursery.start_soon(control)
+        nursery.start_soon(cave_explore, lock)
+        nursery.start_soon(control, lock)
 
 
 def run() -> None:
     """Run the game asynchronously."""
     clear()
-    trio.run(main)
+
+    clock = trio.testing.MockClock(100000) if DEBUG else None
+
+    trio.run(main, clock=clock)
 
 
 if __name__ == "__main__":
