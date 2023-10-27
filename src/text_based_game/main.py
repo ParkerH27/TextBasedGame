@@ -11,11 +11,14 @@ from pathlib import Path
 from typing import Literal, NoReturn
 
 import numpy as np
-import readchar as rchar
+import readchar
 import trio
-from readchar import readchar
-from rich import live, markdown, panel, progress, prompt, traceback
+from rich.live import Live
 from rich.logging import RichHandler
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.progress import track
+from rich.prompt import Confirm, IntPrompt
 
 
 def clear() -> None:
@@ -25,7 +28,7 @@ def clear() -> None:
 
 def heartcount(hearts: int) -> str:
     """Return a string of hearts."""
-    return "".join(["♥" for _ in range(hearts)])
+    return "".join([heartcolor for _ in range(hearts)])
 
 
 async def tprint(text: str, sleep_time: float = 0.08) -> None:
@@ -38,7 +41,7 @@ async def tprint(text: str, sleep_time: float = 0.08) -> None:
 
 x: int
 y: int
-playerchar: Literal[" ", "▲", "◀", "▼", "▶", "◣", "◥", "◤", "◢"]
+playerchar: Literal["▲", "◀", "▼", "▶", "◣", "◥", "◤", "◢"] = "▶"
 ox: int
 oy: int
 px: int = 0
@@ -115,7 +118,7 @@ def open_level(level_path: Path) -> None:
     x = 1
     y = 1
 
-    playerchar = " "
+    playerchar = "▶"
     ox = 0
     oy = 0
     screen = ""
@@ -176,7 +179,7 @@ async def cave_explore() -> None:
  5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
 """,
             )
-            if prompt.Confirm.ask("Do you find and follow the river?"):
+            if Confirm.ask("Do you find and follow the river?"):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
                 await endroom()
@@ -184,7 +187,7 @@ async def cave_explore() -> None:
             game = False
             await tprint("")
             await tprint("")
-            if prompt.Confirm.ask("Follow the underground river?"):
+            if Confirm.ask("Follow the underground river?"):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
                 await endroom()
@@ -253,7 +256,7 @@ What do you do?
 1. Take the treasure.
 2. Leave the treasure and continue looking for the city.""",
     )
-    match prompt.IntPrompt.ask("What do you do?", choices=["1", "2"]):
+    match IntPrompt.ask("What do you do?", choices=["1", "2"]):
         case 1:
             await tprint("It was a trap! You died!")
             sys.exit()
@@ -264,7 +267,7 @@ What do you do?
 2. Leave.""",
             )
 
-            match prompt.IntPrompt.ask("What do you do?", choices=["1", "2"]):
+            match IntPrompt.ask("What do you do?", choices=["1", "2"]):
                 case 1:
                     await endroom()
 
@@ -282,8 +285,7 @@ async def endroom() -> None:
     global x
     global y
 
-    end_cave_file = p / "endcave.txt"
-    open_level(end_cave_file)
+    open_level(p / "endcave.txt")
 
     game = True
     killthread = False
@@ -302,7 +304,7 @@ async def control() -> NoReturn:
         log.debug("Control")
         while game:
             log.debug("on")
-            rc = await trio.to_thread.run_sync(readchar)
+            rc = await trio.to_thread.run_sync(readchar.readchar)
             match rc:
                 case "w":
                     y -= 1
@@ -347,9 +349,10 @@ async def end() -> NoReturn:
     game = True
     killthread = False
     await print_live_panel(
-        """Que cutscene!
+        """Cue cutscene!
 
-You Win!""",
+You Win!
+(To exit, press any key)""",
     )
     sys.exit()
 
@@ -358,7 +361,7 @@ async def main() -> None:
     """Run the game!"""
     global level
 
-    for _ in progress.track(range(11), description="Starting..."):
+    for _ in track(range(11), description="Starting..."):
         await trio.sleep(0.1)
     await trio.sleep(1)
     clear()
@@ -379,7 +382,7 @@ Things to note:
             title="Instructions",
         )
 
-        start = prompt.Confirm.ask("Do you understand?")
+        start = Confirm.ask("Do you understand?")
         clear()
 
     await print_live_panel(
@@ -392,7 +395,7 @@ What do you do?
         title="Introduction",
     )
 
-    match prompt.IntPrompt.ask("What do you do?", choices=["1", "2", "3"]):
+    match IntPrompt.ask("What do you do?", choices=["1", "2", "3"]):
         case 1:
             await tprint(
                 "You follow the map and find a cave entrance. You enter the cave.",
@@ -417,14 +420,14 @@ async def print_live_panel(
     """Print a rich live panel."""
     lines_list = lines.splitlines()
     text = lines_list[0]
-    with live.Live(
-        panel.Panel(text, title=title),
+    with Live(
+        Panel(text, title=title),
     ) as pan:
         for line in lines.splitlines()[1:]:
             await trio.sleep(interval)
             pan.update(
-                panel.Panel(
-                    markdown.Markdown(text := text + "\n" + line),
+                Panel(
+                    Markdown(text := text + "\n" + line),
                     title=title,
                 ),
             )
@@ -440,19 +443,22 @@ async def run_level(file: Path) -> None:
         nursery.start_soon(control)
 
 
+def run() -> None:
+    """Run the game asynchronously."""
+    clear()
+    trio.run(main)
+
+
 if __name__ == "__main__":
     logging.basicConfig(
-        level=100,
+        level="INFO",
         format="%(message)s",
         datefmt="[%X]",
         handlers=[
             RichHandler(
                 rich_tracebacks=True,
-                tracebacks_suppress=[trio, rchar],
+                tracebacks_suppress=[trio, readchar],
             ),
         ],
     )
-
-    clear()
-    traceback.install()
-    trio.run(main)
+    run()
