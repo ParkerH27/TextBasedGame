@@ -393,8 +393,10 @@ Things to note:
 
 - Use `w` `a` `s` `d` to move cardinally.
 - Use `q` `e` `z` `c` to move diagonally.
-- Answer questions with number keys.
-  (If the answer has no number, the last option will be the default)
+- Answer questions with number keys
+  (If the answer has no number, the last option will be the default).
+- To quit the game, press `Ctrl` + `C` followed by any other key
+  (This will not save your progress).
 """,
             title="Instructions",
         )
