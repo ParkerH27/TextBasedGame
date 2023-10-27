@@ -182,7 +182,7 @@ async def cave_explore() -> None:
             if Confirm.ask("Do you find and follow the river?"):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
-                await endroom()
+                endroom()
         elif grid[y][x] == watercolor:
             game = False
             await tprint("")
@@ -190,7 +190,7 @@ async def cave_explore() -> None:
             if Confirm.ask("Follow the underground river?"):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
-                await endroom()
+                endroom()
             else:
                 game = True
         elif grid[y][x] == "∆":
@@ -269,7 +269,7 @@ What do you do?
 
             match IntPrompt.ask("What do you do?", choices=["1", "2"]):
                 case 1:
-                    await endroom()
+                    endroom()
 
                 case 2:
                     await tprint("You leave the cave and go home.")
@@ -277,7 +277,7 @@ What do you do?
                     sys.exit()
 
 
-async def endroom() -> None:
+def endroom() -> None:
     """Go to end room."""
     global game
     global killthread
