@@ -13,6 +13,7 @@ from typing import Literal, NoReturn
 import numpy as np
 import readchar
 import trio
+from rich import traceback
 from rich.live import Live
 from rich.logging import RichHandler
 from rich.markdown import Markdown
@@ -475,15 +476,14 @@ def run() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level="INFO",
-        format="%(message)s",
-        datefmt="[%X]",
-        handlers=[
-            RichHandler(
-                rich_tracebacks=True,
-                tracebacks_suppress=[trio, readchar],
-            ),
-        ],
-    )
+    if DEBUG:
+        traceback.install(suppress=[trio, readchar])
+        logging.basicConfig(
+            level="INFO",
+            format="%(message)s",
+            datefmt="[%X]",
+            handlers=[
+                RichHandler(),
+            ],
+        )
     run()
