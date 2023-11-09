@@ -470,7 +470,7 @@ async def run_level(file: Path) -> None:
 
 
 def run() -> None:
-    """Run the game asynchronously."""
+    """Run the game, asynchronously."""
     clear()
 
     clock = trio.testing.MockClock(100000) if DEBUG else None
