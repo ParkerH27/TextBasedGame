@@ -223,26 +223,26 @@ async def cave_explore(lock: Lock) -> None:
             oy = 0
             ox = 0
         else:
-            clear()
             grid[y][x] = "\033[96m" + playerchar + "\033[0m" + bgcolor
             grid[oy][ox] = arr[oy][ox]
-            screenstr = bgcolor
+            screenstr = [bgcolor]
             nx = max(x - width, 0)
             ny = max(y - width, 0)
             px = min(x + width, num_cols)
             py = min(y + width, num_cols)
-            screenstr += "╔" + ("═" * (px - abs(nx))) + "╗" + "\n"
+            screenstr.append("╔")
+            screenstr.extend(["═" for _ in range(px - abs(nx))])
+            screenstr.append("╗\n")
             smgrid = grid[ny:py, nx:px]
             for i in smgrid:
-                screenstr += "║"
-                screenstr += "".join(i)
-                screenstr += "║"
-                screenstr += "\n"
-            screenstr += "╚" + ("═" * (px - abs(nx))) + "╝"
-            screenstr += "\n"
-            screenstr += screen
-            screenstr += "\n"
-            print(screenstr)
+                screenstr.append("║")
+                screenstr.extend(i)
+                screenstr.append("║\n")
+            screenstr.append("╚")
+            screenstr.extend(["═" for _ in range(px - abs(nx))])
+            screenstr.extend(("╝\n", screen, "\n"))
+            clear()
+            print("".join(screenstr))
         ox = x
         oy = y
         await trio.sleep(0.05)
