@@ -29,7 +29,7 @@ if DEBUG:
 
 def clear() -> None:
     """Clear the terminal."""
-    print("\033c", end="", flush=True)
+    print("\033c\033[3J")
 
 
 def heartcount(hearts: int) -> str:
