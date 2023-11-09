@@ -23,6 +23,7 @@ from trio import Lock
 
 DEBUG = False  # Speed up animations for debugging
 
+
 if DEBUG:
     import trio.testing
 
@@ -55,8 +56,8 @@ py: int = 0
 nx: int = 0
 ny: int = 0
 screen: str
-grid: np.ndarray
-smgrid: np.ndarray
+grid: np.ndarray[str, np.dtype]
+smgrid: np.ndarray[str, np.dtype]
 toggletrap: Literal[0]
 num_rows: int
 num_cols: int
@@ -128,7 +129,7 @@ def open_level(level_path: Path) -> None:
     ox = 0
     oy = 0
     screen = ""
-    grid = np.array(arr, dtype=object)
+    grid = np.array(arr, dtype=str)
     toggletrap = 0
 
 
