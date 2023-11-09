@@ -144,7 +144,7 @@ def scrprt(width: int) -> str:
     return heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
-async def cave_explore(lock: Lock) -> None:
+async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
     """Explore the cave."""
     global x
     global y
@@ -186,7 +186,7 @@ async def cave_explore(lock: Lock) -> None:
             await tprint(
                 """It reads:
     5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
-    """,
+    """,  # noqa: E501
             )
             if Confirm.ask("Do you find and follow the river?"):
                 clear()
@@ -213,7 +213,7 @@ async def cave_explore(lock: Lock) -> None:
                 if level == 1:
                     await key(lock=lock)
                     game = True
-            if level == 2:
+            if level == 2:  # noqa: PLR2004
                 await end(lock=lock)
 
         screen = scrprt(px - abs(nx))
