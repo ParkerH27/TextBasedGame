@@ -194,8 +194,8 @@ async def cave_explore(lock: Lock) -> None:
                 endroom()
         elif grid[y][x] == watercolor:
             game = False
-            await tprint("")
-            await tprint("")
+            print()
+            print()
             if Confirm.ask("Follow the underground river?"):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
@@ -268,6 +268,7 @@ What do you do?
     )
     match IntPrompt.ask("What do you do?", choices=["1", "2"]):
         case 1:
+            clear()
             await tprint("It was a trap! You died!")
             sys.exit()
         case 2:
@@ -282,6 +283,7 @@ What do you do?
                     endroom()
 
                 case 2:
+                    clear()
                     await tprint("You leave the cave and go home.")
                     await tprint("You Loose!")
                     sys.exit()
@@ -418,16 +420,19 @@ What do you do?
 
     match IntPrompt.ask("What do you do?", choices=["1", "2", "3"]):
         case 1:
+            clear()
             await tprint(
                 "You follow the map and find a cave entrance. You enter the cave.",
             )
             await trio.sleep(2)
             await run_level(p / "level1.txt")
         case 2:
+            clear()
             await tprint("You go to sleep. You are The Real Winner!")
             await trio.sleep(2)
             sys.exit()
         case 3:
+            clear()
             await tprint("You decide to research about the city.")
             await trio.sleep(2)
             await run_level(p / "city.txt")
