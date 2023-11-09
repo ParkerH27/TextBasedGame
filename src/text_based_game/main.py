@@ -23,8 +23,6 @@ from rich.prompt import Confirm, IntPrompt
 from trio import Lock
 
 DEBUG = False  # Speed up animations for debugging
-
-
 if DEBUG:
     import trio.testing
 
