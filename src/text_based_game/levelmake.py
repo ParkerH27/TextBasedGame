@@ -75,7 +75,7 @@ def build_parser() -> Namespace:
     return parser.parse_args()
 
 
-async def main() -> None:
+async def run_generator() -> None:
     """Run the generator."""
     parser_args: Namespace = build_parser()
 
@@ -87,9 +87,9 @@ async def main() -> None:
     await image_to_binary(img, trio.Path(level_file))
 
 
-def run() -> None:
+def main() -> None:
     """Run the generator."""
-    trio.run(main, strict_exception_groups=True)
+    trio.run(run_generator, strict_exception_groups=True)
 
 
 if __name__ == "__main__":
@@ -104,4 +104,4 @@ if __name__ == "__main__":
             ),
         ],
     )
-    run()
+    main()

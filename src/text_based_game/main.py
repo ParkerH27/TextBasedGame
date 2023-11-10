@@ -380,9 +380,11 @@ You Win!
     sys.exit()
 
 
-async def main() -> None:
+async def run_game() -> None:
     """Run the game!"""
     global level
+
+    log.info("Starting game!")
 
     for _ in track(range(11), description="Starting..."):
         await trio.sleep(0.1)
@@ -429,17 +431,23 @@ What do you do?
             await tprint(
                 "You follow the map and find a cave entrance. You enter the cave.",
             )
+            log.info("Waiting")
             await trio.sleep(2)
+            log.info("Loading")
             await run_level(p / "level1.txt")
         case 2:
             clear()
             await tprint("You go to sleep. You are The Real Winner!")
+            log.info("Waiting")
             await trio.sleep(2)
+            log.info("Loading")
             sys.exit()
         case 3:
             clear()
             await tprint("You decide to research about the city.")
+            log.info("Waiting")
             await trio.sleep(2)
+            log.info("Loading")
             await run_level(p / "city.txt")
 
 
@@ -467,21 +475,25 @@ async def print_live_panel(
 
 async def run_level(file: Path) -> None:
     """Run a level."""
+    log.info("Getting lock")
     lock = Lock()
 
+    log.info("Opening level!")
     await open_level(file)
+
+    log.info("Starting level!")
     async with trio.open_nursery() as nursery:
         nursery.start_soon(cave_explore, lock)
         nursery.start_soon(control, lock)
 
 
-def run() -> None:
+def main() -> None:
     """Run the game, asynchronously."""
     clear()
 
     clock = trio.testing.MockClock(100000) if DEBUG else None
 
-    trio.run(main, clock=clock, strict_exception_groups=True)
+    trio.run(run_game, clock=clock, strict_exception_groups=True)
 
 
 if __name__ == "__main__":
@@ -495,4 +507,4 @@ if __name__ == "__main__":
                 RichHandler(),
             ],
         )
-    run()
+    main()
