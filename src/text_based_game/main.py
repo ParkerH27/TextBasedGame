@@ -320,7 +320,7 @@ async def control(lock: Lock) -> NoReturn:
 
     while True:
         log.debug("Control")
-        while is_game:
+        while is_game.is_set():
             log.debug("on")
             rc = await trio.to_thread.run_sync(readchar.readchar)
             match rc:
@@ -363,7 +363,7 @@ async def control(lock: Lock) -> NoReturn:
                 case _:
                     pass
             await trio.sleep(0.05)
-        is_game.wait()
+        await is_game.wait()
 
 
 async def end() -> NoReturn:
