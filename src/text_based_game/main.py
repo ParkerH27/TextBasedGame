@@ -3,7 +3,6 @@
 
 # ruff: noqa: PLW0603
 
-
 import logging
 import os
 import sys

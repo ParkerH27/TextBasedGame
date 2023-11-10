@@ -15,16 +15,17 @@ numpy = "^1.26.0"
 python = ">=3.10.0,<3.13"
 readchar = "^4.0.5"
 rich = "^13.6.0"
-trio = "^0.22.2"
+trio = "^0.23.1"
 
 [tool.poetry.group.dev.dependencies]
 debugpy = "^1.6.2"
+poetry = "^1.7.0"
 replit-python-lsp-server = { extras = [
     "pyflakes",
     "rope",
     "yapf",
 ], version = "^1.5.9" }
-ruff = "^0.1.2"
+ruff = "^0.1.5"
 
 [tool.poetry.scripts]
 level_make = "text_based_game.levelmake:run"
@@ -48,7 +49,6 @@ ignore = [
 preview = true
 select = ["ALL"]
 target-version = "py310"
-
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
