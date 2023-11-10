@@ -43,6 +43,7 @@ ignore = [
     "D211",
     "D213",
     "D400",
+    "S311",
     "T201",
     "TD003",
     "TRIO115", # Turn on once false positives go down.

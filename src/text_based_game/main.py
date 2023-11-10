@@ -6,6 +6,7 @@
 import functools
 import logging
 import os
+import random
 import sys
 from typing import Literal, NoReturn
 
@@ -67,9 +68,9 @@ heartstring: str
 arr: np.ndarray
 items: list[int] = [3, 0]
 bgcolor = "\033[92m"
-killthread: Event = Event()
-game: Event = Event()
-game.set()
+killthread = False
+is_game: Event = Event()
+is_game.set()
 width = 12
 level: int
 
@@ -155,7 +156,8 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
     global py
     global nx
     global ny
-    global game
+    global killthread
+    global is_game
     global screen
 
     async with lock:
@@ -193,7 +195,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 await tprint("You follow the river and find a deep cave.")
                 await endroom()
         elif grid[y][x] == watercolor:
-            game = Event()
+            is_game = Event()
             print()
             print()
             if await trio.to_thread.run_sync(
@@ -204,7 +206,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 await tprint("You follow the river and find a deep cave.")
                 await endroom()
             else:
-                game.set()
+                is_game.set()
         elif grid[y][x] == "∆":
             items[0] -= 1
             heartstring = heartcount(items[0])
@@ -215,7 +217,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 screen = scrprt(px - abs(nx))
                 if level == 1:
                     await key(lock=lock)
-                    game.set()
+                    is_game.set()
             if level == 2:  # noqa: PLR2004
                 await end()
 
@@ -250,15 +252,16 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
         oy = y
         await trio.sleep(0.05)
     clear()
-    killthread.set()
+    killthread = True
 
 
 async def key(lock: Lock) -> None:
     """Use the key."""
-    global game
+    global is_game
+    global killthread
     async with lock:
-        game = Event()
-        killthread.set()
+        is_game = Event()
+        killthread = True
     await print_live_panel(
         """Door Opened!
 
@@ -304,8 +307,8 @@ async def endroom() -> None:
 
     await open_level(p / "endcave.txt")
 
-    game.set()
-    killthread = Event()
+    is_game.set()
+    killthread = False
     x = 1
     y = 1
     level = 2
@@ -319,7 +322,7 @@ async def control(lock: Lock) -> NoReturn:
 
     while True:
         log.debug("Control")
-        while game:
+        while is_game:
             log.debug("on")
             rc = await trio.to_thread.run_sync(readchar.readchar)
             match rc:
@@ -362,15 +365,15 @@ async def control(lock: Lock) -> NoReturn:
                 case _:
                     pass
             await trio.sleep(0.05)
-        game.wait()
+        is_game.wait()
 
 
 async def end() -> NoReturn:
     """End the game as a winner."""
     global killthread
 
-    game.set()
-    killthread = Event()
+    is_game.set()
+    killthread = False
     await print_live_panel(
         """Cue cutscene!
 
@@ -380,14 +383,16 @@ You Win!
     sys.exit()
 
 
-async def run_game() -> None:
+async def game() -> None:
     """Run the game!"""
     global level
 
     log.info("Starting game!")
 
-    for _ in track(range(11), description="Starting..."):
-        await trio.sleep(0.1)
+    message = "Establishing connection...\r"
+    await tprint(message)
+    for _ in track(range(random.randint(2, 20)), description=message):
+        await trio.sleep(random.random() / 4)
     await trio.sleep(1)
     clear()
 
@@ -399,11 +404,13 @@ async def run_game() -> None:
             """Welcome to the game!
 Things to note:
 
-- Use `w` `a` `s` `d` to move cardinally.
-- Use `q` `e` `z` `c` to move diagonally.
-- Answer questions with number keys
+- Use `w` `a` `s` `d` to move _cardinally_.
+- Use `q` `e` `z` `c` to move _diagonally_.
+- Answer questions with **number** keys
   (If the answer has no number, the last option will be the default).
-- To quit the game, press `Ctrl` + `C` followed by any other key
+- Play in a terminal that supports **ANSI** escape codes.
+- Play in a terminal that is at least **_30_ lines tall** and **_26_ characters wide**.
+- To quit the game, press `Ctrl` + `C` followed by _any_ other **key**
   (This will not save your progress).
 """,
             title="Instructions",
@@ -452,25 +459,24 @@ What do you do?
 
 
 async def print_live_panel(
-    lines: str,
+    text: str,
     title: str | None = None,
-    interval: float = 0.8,
+    interval: float | None = None,
 ) -> None:
-    """Print a rich live panel."""
-    lines_list = lines.splitlines()
-    text = lines_list[0]
+    """Print a rich live panel.
+
+    :param text: The lines to print.
+    :param title: The title of the panel.
+    :interval: The interval between each character.
+        If None, a random interval will be chosen for each character.
+    """
     with Live(
-        Panel(text, title=title),
+        Panel(text[0], title=title),
     ) as pan:
-        for line in lines.splitlines()[1:]:
-            await trio.sleep(interval)
-            pan.update(
-                Panel(
-                    Markdown(text := text + "\n" + line),
-                    title=title,
-                ),
-            )
-    await trio.sleep(interval)
+        for i, _ in enumerate(text):
+            await trio.sleep(random.random() / 1.5 if interval is None else interval)
+            pan.update(Panel(Markdown(text[: i + 1]), title=title))
+        await trio.sleep(random.random() / 1.5 if interval is None else interval)
 
 
 async def run_level(file: Path) -> None:
@@ -493,13 +499,14 @@ def main() -> None:
 
     clock = trio.testing.MockClock(100000) if DEBUG else None
 
-    trio.run(run_game, clock=clock, strict_exception_groups=True)
+    trio.run(game, clock=clock, strict_exception_groups=True)
 
 
 if __name__ == "__main__":
     if DEBUG:
         traceback.install(suppress=[trio, readchar])
         logging.basicConfig(
+            filename="game.log",
             level="INFO",
             format="%(message)s",
             datefmt="[%X]",
