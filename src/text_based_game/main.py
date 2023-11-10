@@ -12,6 +12,7 @@ from typing import Literal, NoReturn
 
 import numpy as np
 import readchar
+import rich
 import trio
 from rich import traceback
 from rich.live import Live
@@ -167,6 +168,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
     while not killthread.is_set():
         if items[0] == 0:
             await tprint("You died!")
+            rich.get_console().bell()
             sys.exit()
         if grid[y][x] == heartcolor:
             arr[y][x] = " "
@@ -275,6 +277,7 @@ What do you do?
         case 1:
             clear()
             await tprint("It was a trap! You died!")
+            rich.get_console().bell()
             sys.exit()
         case 2:
             await print_live_panel(
@@ -406,6 +409,8 @@ Things to note:
 - Use `q` `e` `z` `c` to move _diagonally_.
 - Answer questions with **number** keys
   (If the answer has no number, the last option will be the default).
+  If your keypresses are not registering, keep pressing the key until it registers,
+  or hit enter. It's a bit buggy.
 - Play in a terminal that supports **ANSI** escape codes.
 - Play in a terminal that is at least **_30_ lines tall** and **_26_ characters wide**.
 - To quit the game, press `Ctrl` + `C` followed by _any_ other **key**
@@ -472,9 +477,16 @@ async def print_live_panel(
         Panel(text[0], title=title),
     ) as pan:
         for i, _ in enumerate(text):
-            await trio.sleep(random.random() / 1.5 if interval is None else interval)
+            await trio.sleep(
+                interval if interval is not None else _get_random_interval(),
+            )
             pan.update(Panel(Markdown(text[: i + 1]), title=title))
-        await trio.sleep(random.random() / 1.5 if interval is None else interval)
+        await trio.sleep(interval if interval is not None else _get_random_interval())
+
+
+def _get_random_interval() -> float:
+    """Get a random interval."""
+    return random.random() / 1.75
 
 
 async def run_level(file: Path) -> None:
