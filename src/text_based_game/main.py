@@ -55,8 +55,8 @@ py: int = 0
 nx: int = 0
 ny: int = 0
 screen: str
-grid: np.ndarray[str, np.dtype]
-smgrid: np.ndarray[str, np.dtype]
+grid: np.ndarray[int, np.dtype[np.str_]]
+smgrid: np.ndarray[int, np.dtype[np.str_]]
 toggletrap: Literal[0]
 num_rows: int
 num_cols: int
