@@ -474,7 +474,7 @@ def run() -> None:
 
     clock = trio.testing.MockClock(100000) if DEBUG else None
 
-    trio.run(main, clock=clock)
+    trio.run(main, clock=clock, strict_exception_groups=True)
 
 
 if __name__ == "__main__":
