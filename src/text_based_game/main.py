@@ -502,9 +502,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     if DEBUG:
-        traceback.install(suppress=[trio, readchar])
+        traceback.install()
         logging.basicConfig(
-            filename="game.log",
             level="INFO",
             format="%(message)s",
             datefmt="[%X]",
