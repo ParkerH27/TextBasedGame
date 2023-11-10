@@ -497,7 +497,11 @@ def main() -> None:
 
     clock = trio.testing.MockClock(100000) if DEBUG else None
 
-    trio.run(game, clock=clock, strict_exception_groups=True)
+    try:
+        trio.run(game, clock=clock, strict_exception_groups=True)
+    except* (SystemExit, KeyboardInterrupt) as excgroup:
+        for exc in excgroup.exceptions:
+            raise SystemExit from exc
 
 
 if __name__ == "__main__":
