@@ -45,6 +45,7 @@ ignore = [
     "D400",
     "T201",
     "TD003",
+    "TRIO115", # Turn on once false positives go down.
 ]
 preview = true
 select = ["ALL"]
