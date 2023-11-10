@@ -19,7 +19,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import track
 from rich.prompt import Confirm, IntPrompt
-from trio import Lock
+from trio import Event, Lock
 
 DEBUG = False  # Speed up animations for debugging
 if DEBUG:
@@ -68,7 +68,8 @@ arr: np.ndarray
 items: list[int] = [3, 0]
 bgcolor = "\033[92m"
 killthread = False
-game = True
+game: Event = Event()
+game.set()
 width = 12
 level: int
 
@@ -190,7 +191,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 await tprint("You follow the river and find a deep cave.")
                 endroom()
         elif grid[y][x] == watercolor:
-            game = False
+            game = Event()
             print()
             print()
             if Confirm.ask("Follow the underground river?"):
@@ -198,7 +199,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 await tprint("You follow the river and find a deep cave.")
                 endroom()
             else:
-                game = True
+                game.set()
         elif grid[y][x] == "∆":
             items[0] -= 1
             heartstring = heartcount(items[0])
@@ -209,9 +210,9 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 screen = scrprt(px - abs(nx))
                 if level == 1:
                     await key(lock=lock)
-                    game = True
+                    game.set()
             if level == 2:  # noqa: PLR2004
-                await end(lock=lock)
+                await end()
 
         screen = scrprt(px - abs(nx))
         if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
@@ -252,7 +253,7 @@ async def key(lock: Lock) -> None:
     global game
     global killthread
     async with lock:
-        game = False
+        game = Event()
         killthread = True
     await print_live_panel(
         """Door Opened!
@@ -288,7 +289,6 @@ What do you do?
 
 def endroom() -> None:
     """Go to end room."""
-    global game
     global killthread
     global level
     global x
@@ -296,7 +296,7 @@ def endroom() -> None:
 
     open_level(p / "endcave.txt")
 
-    game = True
+    game.set()
     killthread = False
     x = 1
     y = 1
@@ -354,18 +354,15 @@ async def control(lock: Lock) -> NoReturn:
                 case _:
                     pass
             await trio.sleep(0.05)
-        while not game:
-            await trio.sleep(1)
+        game.wait()
 
 
-async def end(lock: Lock) -> NoReturn:
+async def end() -> NoReturn:
     """End the game as a winner."""
-    global game
     global killthread
 
-    async with lock:
-        game = True
-        killthread = False
+    game.set()
+    killthread = False
     await print_live_panel(
         """Cue cutscene!
 
