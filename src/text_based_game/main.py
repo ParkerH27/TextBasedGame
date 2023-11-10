@@ -68,7 +68,7 @@ heartstring: str
 arr: np.ndarray
 items: list[int] = [3, 0]
 bgcolor = "\033[92m"
-killthread = False
+killthread: Event = Event()
 is_game: Event = Event()
 is_game.set()
 width = 12
@@ -156,7 +156,6 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
     global py
     global nx
     global ny
-    global killthread
     global is_game
     global screen
 
@@ -165,7 +164,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
         keystring = keycount(items[1])
         screen = scrprt(px - abs(nx))
 
-    while not killthread:
+    while not killthread.is_set():
         if items[0] == 0:
             await tprint("You died!")
             sys.exit()
@@ -252,16 +251,15 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
         oy = y
         await trio.sleep(0.05)
     clear()
-    killthread = True
+    killthread.set()
 
 
 async def key(lock: Lock) -> None:
     """Use the key."""
     global is_game
-    global killthread
     async with lock:
         is_game = Event()
-        killthread = True
+        killthread.set()
     await print_live_panel(
         """Door Opened!
 
@@ -308,7 +306,7 @@ async def endroom() -> None:
     await open_level(p / "endcave.txt")
 
     is_game.set()
-    killthread = False
+    killthread = Event()
     x = 1
     y = 1
     level = 2
@@ -373,7 +371,7 @@ async def end() -> NoReturn:
     global killthread
 
     is_game.set()
-    killthread = False
+    killthread = Event()
     await print_live_panel(
         """Cue cutscene!
 
