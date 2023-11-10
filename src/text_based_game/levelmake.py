@@ -1,24 +1,28 @@
 """Connected component labeling—img to level."""
 
-
 import logging
 import os
+import pathlib
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 
+import trio
 from PIL import Image
+from rich import traceback
 from rich.logging import RichHandler
 
 log = logging.getLogger("level_make")
 
 
-def image_to_binary(image_path: Path, location: Path) -> list[list[bool]]:
+async def image_to_binary(
+    image_path: pathlib.Path,
+    location: trio.Path,
+) -> list[list[bool]]:
     """Convert an image to a binary array."""
-    # Open the image file
-    image = Image.open(image_path)
+    log.info("Opening image...")
+    image = await trio.to_thread.run_sync(Image.open, image_path)
 
-    # Convert the image to black and white
-    image = image.convert("1")
+    log.info("Converting image to black and white...")
+    image = await trio.to_thread.run_sync(image.convert, "1")
 
     # Get the pixel data as a list of tuples
     pixel_data: list[int] = list(image.getdata())
@@ -28,6 +32,7 @@ def image_to_binary(image_path: Path, location: Path) -> list[list[bool]]:
 
     # Convert the pixel data to a 2D array of 1s and 0s
     binary_data: list[list[bool]] = []
+    log.info("Converting image to binary...")
     for y in range(height):
         row: list[bool] = []
         for x in range(width):
@@ -35,15 +40,16 @@ def image_to_binary(image_path: Path, location: Path) -> list[list[bool]]:
             row.append(pixel == 0)
         binary_data.append(row)
 
-    # Write the binary data to a file
-    with location.open("w", encoding="utf-8") as f:
+    log.info("Writing to file...")
+    async with await location.open("w", encoding="utf-8") as f:
         for row in binary_data:
             for pixel in row:
-                f.write("╋" if pixel == 1 else " ")
-            f.write("\n")
+                await f.write("╋" if pixel == 1 else " ")
+            await f.write("\n")
 
-    # Return the binary data as a 2D array
-    return binary_data
+    log.info("Finished!")
+
+    return binary_data  # Return the binary data as a 2D array
 
 
 def build_parser() -> Namespace:
@@ -69,20 +75,25 @@ def build_parser() -> Namespace:
     return parser.parse_args()
 
 
-def run() -> None:
+async def main() -> None:
     """Run the generator."""
     parser_args: Namespace = build_parser()
 
-    p = Path(os.path.realpath(__file__)).parent
+    p = pathlib.Path(os.path.realpath(__file__)).parent
 
-    img = p / parser_args.input
-    level_file = p / parser_args.output
+    img: pathlib.Path = p / parser_args.input
+    level_file: pathlib.Path = p / parser_args.output
 
-    image_to_binary(img, level_file)
-    log.info("Finished!")
+    await image_to_binary(img, trio.Path(level_file))
+
+
+def run() -> None:
+    """Run the generator."""
+    trio.run(main, strict_exception_groups=True)
 
 
 if __name__ == "__main__":
+    traceback.install(suppress=[trio])
     logging.basicConfig(
         level="INFO",
         format="%(message)s",

@@ -3,10 +3,10 @@
 
 # ruff: noqa: PLW0603
 
+import functools
 import logging
 import os
 import sys
-from pathlib import Path
 from typing import Literal, NoReturn
 
 import numpy as np
@@ -19,7 +19,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import track
 from rich.prompt import Confirm, IntPrompt
-from trio import Event, Lock
+from trio import Event, Lock, Path
 
 DEBUG = False  # Speed up animations for debugging
 if DEBUG:
@@ -67,7 +67,7 @@ heartstring: str
 arr: np.ndarray
 items: list[int] = [3, 0]
 bgcolor = "\033[92m"
-killthread = False
+killthread: Event = Event()
 game: Event = Event()
 game.set()
 width = 12
@@ -80,7 +80,7 @@ p = Path(os.path.realpath(__file__)).parent
 log = logging.getLogger("game")
 
 
-def open_level(level_path: Path) -> None:
+async def open_level(level_path: Path) -> None:
     """Open a level file."""
     global x
     global y
@@ -98,8 +98,8 @@ def open_level(level_path: Path) -> None:
     global keystring
     global heartstring
     global arr
-    with level_path.open("r") as f:
-        lines = f.readlines()
+    async with await level_path.open("r") as f:
+        lines = await f.readlines()
 
     num_rows = len(lines)
     num_cols = max([len(line.strip()) for line in lines])
@@ -155,7 +155,6 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
     global py
     global nx
     global ny
-    global killthread
     global game
     global screen
 
@@ -186,18 +185,24 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
     5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
     """,  # noqa: E501
             )
-            if Confirm.ask("Do you find and follow the river?"):
+            if await trio.to_thread.run_sync(
+                Confirm.ask,
+                "Do you find and follow the river?",
+            ):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
-                endroom()
+                await endroom()
         elif grid[y][x] == watercolor:
             game = Event()
             print()
             print()
-            if Confirm.ask("Follow the underground river?"):
+            if await trio.to_thread.run_sync(
+                Confirm.ask,
+                "Follow the underground river?",
+            ):
                 clear()
                 await tprint("You follow the river and find a deep cave.")
-                endroom()
+                await endroom()
             else:
                 game.set()
         elif grid[y][x] == "∆":
@@ -245,16 +250,15 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
         oy = y
         await trio.sleep(0.05)
     clear()
-    killthread = True
+    killthread.set()
 
 
 async def key(lock: Lock) -> None:
     """Use the key."""
     global game
-    global killthread
     async with lock:
         game = Event()
-        killthread = True
+        killthread.set()
     await print_live_panel(
         """Door Opened!
 
@@ -264,7 +268,9 @@ What do you do?
 1. Take the treasure.
 2. Leave the treasure and continue looking for the city.""",
     )
-    match IntPrompt.ask("What do you do?", choices=["1", "2"]):
+    match await trio.to_thread.run_sync(
+        functools.partial(IntPrompt.ask, "What do you do?", choices=["1", "2"]),
+    ):
         case 1:
             clear()
             await tprint("It was a trap! You died!")
@@ -276,9 +282,11 @@ What do you do?
 2. Leave.""",
             )
 
-            match IntPrompt.ask("What do you do?", choices=["1", "2"]):
+            match await trio.to_thread.run_sync(
+                functools.partial(IntPrompt.ask, "What do you do?", choices=["1", "2"]),
+            ):
                 case 1:
-                    endroom()
+                    await endroom()
 
                 case 2:
                     clear()
@@ -287,17 +295,17 @@ What do you do?
                     sys.exit()
 
 
-def endroom() -> None:
+async def endroom() -> None:
     """Go to end room."""
     global killthread
     global level
     global x
     global y
 
-    open_level(p / "endcave.txt")
+    await open_level(p / "endcave.txt")
 
     game.set()
-    killthread = False
+    killthread = Event()
     x = 1
     y = 1
     level = 2
@@ -362,7 +370,7 @@ async def end() -> NoReturn:
     global killthread
 
     game.set()
-    killthread = False
+    killthread = Event()
     await print_live_panel(
         """Cue cutscene!
 
@@ -383,8 +391,8 @@ async def main() -> None:
 
     level = 1
 
-    start = False
-    while not start:
+    start: Event = Event()
+    while not start.is_set():
         await print_live_panel(
             """Welcome to the game!
 Things to note:
@@ -399,7 +407,8 @@ Things to note:
             title="Instructions",
         )
 
-        start = Confirm.ask("Do you understand?")
+        if await trio.to_thread.run_sync(Confirm.ask, "Do you understand?"):
+            start.set()
         clear()
 
     await print_live_panel(
@@ -412,7 +421,9 @@ What do you do?
         title="Introduction",
     )
 
-    match IntPrompt.ask("What do you do?", choices=["1", "2", "3"]):
+    match await trio.to_thread.run_sync(
+        functools.partial(IntPrompt.ask, "What do you do?", choices=["1", "2", "3"]),
+    ):
         case 1:
             clear()
             await tprint(
@@ -456,10 +467,9 @@ async def print_live_panel(
 
 async def run_level(file: Path) -> None:
     """Run a level."""
-    open_level(file)
-
     lock = Lock()
 
+    await open_level(file)
     async with trio.open_nursery() as nursery:
         nursery.start_soon(cave_explore, lock)
         nursery.start_soon(control, lock)
