@@ -19,7 +19,7 @@ trio = "^0.23.1"
 
 [tool.poetry.group.dev.dependencies]
 debugpy = "^1.8.1"
-poetry = "^1.7.0"
+poetry = "^1.7.1"
 replit-python-lsp-server = { extras = [
     "pyflakes",
     "rope",
