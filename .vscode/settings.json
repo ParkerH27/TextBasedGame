@@ -1,15 +1,26 @@
 {
+  "editor.formatOnSave": true,
+  "explorer.fileNesting.patterns": {
+    "README.md": "*.md",
+    "pyproject.toml": "poetry.lock"
+  },
   "[python]": {
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": true
-    },
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always",
+      "source.fixAll": "explicit"
+    }
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
   "python.analysis.autoFormatStrings": true,
   "python.analysis.completeFunctionParens": true,
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,
+  "python.analysis.autoSearchPaths": false,
   "python.terminal.activateEnvInCurrentTerminal": true
 }

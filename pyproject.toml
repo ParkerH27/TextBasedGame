@@ -1,5 +1,6 @@
 [tool.poetry]
 authors = [
+    "Elisha Dukes <88557639+lishaduck@users.noreply.github.com>",
     "Parker Hasenkamp <hasenkap@student.psdr3.org>",
 ]
 description = "A game."
@@ -7,51 +8,81 @@ name = "text_based_game"
 packages = [
     { include = "text_based_game", from = "src" },
 ]
+readme = "README.md"
 version = "0.1.0"
 
+[tool.poetry.scripts]
+levelmake = "text_based_game.levelmake:main"
+text_based_game = "text_based_game.main:main"
+
 [tool.poetry.dependencies]
-Pillow = "^10.1.0"
-numpy = "^1.26.0"
-python = ">=3.10.0,<3.13"
-readchar = "^4.0.5"
-rich = "^13.6.0"
-trio = "^0.23.1"
+numpy = "1.26.4"
+pillow = "10.2.0"
+python = ">=3.11, <3.13"
+readchar = "4.0.5"
+rich = "13.7.0"
+trio = "0.24.0"
 
 [tool.poetry.group.dev.dependencies]
 debugpy = "^1.8.1"
-poetry = "^1.7.0"
+poetry = "1.7.1"
+pyright = "1.1.350"
 replit-python-lsp-server = { extras = [
     "pyflakes",
     "rope",
     "yapf",
 ], version = "^1.5.9" }
-ruff = "^0.1.5"
-
-[tool.poetry.scripts]
-level_make = "text_based_game.levelmake:main"
-text_based_game = "text_based_game.main:main"
-
-[tool.pyright]
-# https://github.com/microsoft/pyright/blob/main/docs/configuration.md
-exclude = [".cache"]
-useLibraryCodeForTypes = true
-
-[tool.ruff]
-# https://docs.astral.sh/ruff/configuration/
-ignore = [
-    "CPY001",
-    "D211",
-    "D213",
-    "D400",
-    "S311",
-    "T201",
-    "TD003",
-    "TRIO115", # Turn on once false positives go down.
-]
-preview = true
-select = ["ALL"]
-target-version = "py310"
+ruff = "0.2.2"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
+
+[tool.ruff]
+# https://docs.astral.sh/ruff/configuration/
+src = ["src"]
+target-version = "py310"
+
+[tool.ruff.format]
+docstring-code-format = true
+preview = true
+
+[tool.ruff.lint]
+ignore = [
+    "COM812",
+    "CPY001",
+    "D400",
+    "E203",
+    "E501",
+    "ISC001",
+    "PLR2004", # temporary
+    "S311",
+    "T201",
+    "TD003",
+]
+preview = true # enables pylint rules
+select = [
+    "ALL",
+    "D212",
+    "D404",
+    "D415",
+    "D417",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+[tool.pyright]
+# https://github.com/microsoft/pyright/blob/main/docs/configuration.md
+exclude = [".cache"]
+include = ["src"]
+
+pythonVersion = "3.11"
+reportMissingImports = true
+reportMissingTypeStubs = false
+strictDictionaryInference = true
+strictListInference = true
+strictSetInference = true

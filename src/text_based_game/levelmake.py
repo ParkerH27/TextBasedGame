@@ -1,14 +1,14 @@
 """Connected component labeling—img to level."""
 
+from argparse import ArgumentParser, Namespace
 import logging
 import os
 import pathlib
-from argparse import ArgumentParser, Namespace
 
-import trio
 from PIL import Image
 from rich import traceback
 from rich.logging import RichHandler
+import trio
 
 log = logging.getLogger("level_make")
 

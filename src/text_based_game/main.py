@@ -13,7 +13,6 @@ from typing import Literal, NoReturn
 import numpy as np
 import readchar
 import rich
-import trio
 from rich import traceback
 from rich.live import Live
 from rich.logging import RichHandler
@@ -21,6 +20,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import track
 from rich.prompt import Confirm, IntPrompt
+import trio
 from trio import Event, Lock, Path
 
 DEBUG = False  # Speed up animations for debugging
@@ -186,7 +186,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
             await tprint(
                 """It reads:
     5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
-    """,  # noqa: E501
+    """,
             )
             if await trio.to_thread.run_sync(
                 Confirm.ask,
@@ -219,7 +219,7 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
                 if level == 1:
                     await key(lock=lock)
                     is_game.set()
-            if level == 2:  # noqa: PLR2004
+            if level == 2:
                 await end()
 
         screen = scrprt(px - abs(nx))
