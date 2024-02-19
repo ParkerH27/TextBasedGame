@@ -25,7 +25,7 @@ replit-python-lsp-server = { extras = [
     "rope",
     "yapf",
 ], version = "^1.5.9" }
-ruff = "^0.1.5"
+ruff = "^0.2.2"
 
 [tool.poetry.scripts]
 level_make = "text_based_game.levelmake:main"
