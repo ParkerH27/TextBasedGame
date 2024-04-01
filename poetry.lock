@@ -1054,13 +1054,13 @@ files = [
 
 [[package]]
 name = "pyright"
-version = "1.1.350"
+version = "1.1.356"
 description = "Command line wrapper for pyright"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pyright-1.1.350-py3-none-any.whl", hash = "sha256:f1dde6bcefd3c90aedbe9dd1c573e4c1ddbca8c74bf4fa664dd3b1a599ac9a66"},
-    {file = "pyright-1.1.350.tar.gz", hash = "sha256:a8ba676de3a3737ea4d8590604da548d4498cc5ee9ee00b1a403c6db987916c6"},
+    {file = "pyright-1.1.356-py3-none-any.whl", hash = "sha256:a101b0f375f93d7082f9046cfaa7ba15b7cf8e1939ace45e984c351f6e8feb99"},
+    {file = "pyright-1.1.356.tar.gz", hash = "sha256:f05b8b29d06b96ed4a0885dad5a31d9dff691ca12b2f658249f583d5f2754021"},
 ]
 
 [package.dependencies]
@@ -1722,4 +1722,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.13"
-content-hash = "480cc5dfcb16f0952900a92bf06c4b2e09df65b9896daa9b13f2952f0883fff8"
+content-hash = "2cc3f67460a3687159951000a8936ad23e64dcad247db3f4f4d6574028b950de"
