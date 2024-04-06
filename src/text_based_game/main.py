@@ -23,12 +23,14 @@ from rich.prompt import Confirm, IntPrompt
 from rich.text import Text
 import trio
 from trio import Event, Lock, Path
+from typing_extensions import deprecated
 
 DEBUG = False  # Speed up animations for debugging
 if DEBUG:
     import trio.testing
 
 
+@deprecated("Use `rich.live.Live` instead.")
 def clear() -> None:
     """Clear the terminal."""
     print("\033c\033[3J")
@@ -430,6 +432,7 @@ What do you do?
         title="Introduction",
     )
 
+    log.info("Waiting for user input...")
     match await trio.to_thread.run_sync(
         functools.partial(IntPrompt.ask, "What do you do?", choices=["1", "2", "3"]),
     ):
