@@ -20,6 +20,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import track
 from rich.prompt import Confirm, IntPrompt
+from rich.text import Text
 import trio
 from trio import Event, Lock, Path
 
@@ -144,7 +145,7 @@ def scrprt(width: int) -> str:
     return heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
-async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
+async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0915
     """Explore the cave."""
     global x
     global y
@@ -165,72 +166,70 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
         keystring = keycount(items[1])
         screen = scrprt(px - abs(nx))
 
-    while not killthread.is_set():
-        if items[0] == 0:
-            await tprint("You died!")
-            rich.get_console().bell()
-            sys.exit()
-        if grid[y][x] == heartcolor:
-            arr[y][x] = " "
-            items[0] += 1
-            heartstring = heartcount(items[0])
-            screen = scrprt(px - abs(nx))
-        elif grid[y][x] == keycolor:
-            arr[y][x] = " "
-            items[1] += 1
-            keystring = keycount(items[1])
-            screen = scrprt(px - abs(nx))
-        elif grid[y][x] == "☰":
-            arr[y][x] = " "
-            await tprint("You found a note!\n")
-            await tprint(
-                """It reads:
-    5/6/1926\n I found a river today near the Library. I think I will follow it tomorrow.
-    """,
-            )
-            if await trio.to_thread.run_sync(
-                Confirm.ask,
-                "Do you find and follow the river?",
-            ):
-                clear()
-                await tprint("You follow the river and find a deep cave.")
-                await endroom()
-        elif grid[y][x] == watercolor:
-            is_game = Event()
-            print()
-            print()
-            if await trio.to_thread.run_sync(
-                Confirm.ask,
-                "Follow the underground river?",
-            ):
-                clear()
-                await tprint("You follow the river and find a deep cave.")
-                await endroom()
-            else:
-                is_game.set()
-        elif grid[y][x] == "∆":
-            items[0] -= 1
-            heartstring = heartcount(items[0])
-            screen = scrprt(px - abs(nx))
-        elif grid[y][x] == "⊡":
-            if items[1] > 0:
-                items[1] -= 1
+    with Live(refresh_per_second=10, screen=True) as live:
+        while not killthread.is_set():
+            if items[0] == 0:
+                await tprint("You died!")
+                rich.get_console().bell()
+                sys.exit()
+            if grid[y][x] == heartcolor:
+                arr[y][x] = " "
+                items[0] += 1
+                heartstring = heartcount(items[0])
                 screen = scrprt(px - abs(nx))
-                if level == 1:
-                    await key(lock=lock)
+            elif grid[y][x] == keycolor:
+                arr[y][x] = " "
+                items[1] += 1
+                keystring = keycount(items[1])
+                screen = scrprt(px - abs(nx))
+            elif grid[y][x] == "☰":
+                arr[y][x] = " "
+                await tprint(
+                    """You found a note! It reads:
+5/6/1926
+I found a river today near the Library. I think I will follow it tomorrow.""",
+                )
+                if await trio.to_thread.run_sync(
+                    Confirm.ask,
+                    "Do you find and follow the river?",
+                ):
+                    clear()
+                    await tprint("You follow the river and find a deep cave.")
+                    await endroom()
+            elif grid[y][x] == watercolor:
+                is_game = Event()
+                if await trio.to_thread.run_sync(
+                    Confirm.ask,
+                    "\n\nFollow the underground river?",
+                ):
+                    clear()
+                    await tprint("You follow the river and find a deep cave.")
+                    await endroom()
+                else:
                     is_game.set()
-            if level == 2:
-                await end()
+            elif grid[y][x] == "∆":
+                items[0] -= 1
+                heartstring = heartcount(items[0])
+                screen = scrprt(px - abs(nx))
+            elif grid[y][x] == "⊡":
+                if items[1] > 0:
+                    items[1] -= 1
+                    screen = scrprt(px - abs(nx))
+                    if level == 1:
+                        await key(lock=lock)
+                        is_game.set()
+                if level == 2:
+                    await end()
 
-        screen = scrprt(px - abs(nx))
-        if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
-            x = ox
-            y = oy
-            oy = 0
-            ox = 0
-        else:
-            grid[y][x] = "\033[96m" + playerchar + "\033[0m" + bgcolor
-            grid[oy][ox] = arr[oy][ox]
+            screen = scrprt(px - abs(nx))
+            if grid[y][x] not in {" ", heartcolor, keycolor, "∆"}:
+                x = ox
+                y = oy
+                oy = 0
+                ox = 0
+            else:
+                grid[y][x] = "\033[96m" + playerchar + "\033[0m" + bgcolor
+                grid[oy][ox] = arr[oy][ox]
             screenstr = [bgcolor]
             nx = max(x - width, 0)
             ny = max(y - width, 0)
@@ -247,13 +246,11 @@ async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0912, PLR0915
             screenstr.append("╚")
             screenstr.extend(["═" for _ in range(px - abs(nx))])
             screenstr.extend(("╝\n", screen, "\n"))
-            clear()
-            print("".join(screenstr))
-        ox = x
-        oy = y
-        await trio.sleep(0.05)
-    clear()
-    killthread.set()
+            live.update(Text.from_ansi("".join(screenstr)))
+            ox = x
+            oy = y
+            await trio.sleep(0.05)
+        killthread.set()
 
 
 async def key(lock: Lock) -> None:
