@@ -1223,13 +1223,13 @@ full = ["numpy"]
 
 [[package]]
 name = "readchar"
-version = "4.0.5"
+version = "4.0.6"
 description = "Library to easily read single chars and key strokes"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "readchar-4.0.5-py3-none-any.whl", hash = "sha256:76ec784a5dd2afac3b7da8003329834cdd9824294c260027f8c8d2e4d0a78f43"},
-    {file = "readchar-4.0.5.tar.gz", hash = "sha256:08a456c2d7c1888cde3f4688b542621b676eb38cd6cfed7eb6cb2e2905ddc826"},
+    {file = "readchar-4.0.6-py3-none-any.whl", hash = "sha256:b4b31dd35de4897be738f27e8f9f62426b5fedb54b648364987e30ae534b71bc"},
+    {file = "readchar-4.0.6.tar.gz", hash = "sha256:e0dae942d3a746f8d5423f83dbad67efe704004baafe31b626477929faaee472"},
 ]
 
 [package.dependencies]
@@ -1722,4 +1722,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.13"
-content-hash = "7927d2a0d7a7e607da8b895338ea35a6ce813190b210c5c8d384ba08ee6ab62b"
+content-hash = "6c0dab0a58dad24abd4c3ca2ba515a5fc37b167138047a52898385ddd88d2d40"

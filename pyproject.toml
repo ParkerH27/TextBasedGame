@@ -19,7 +19,7 @@ text_based_game = "text_based_game.main:main"
 numpy = "1.26.4"
 pillow = "10.2.0"
 python = ">=3.11, <3.13"
-readchar = "4.0.5"
+readchar = "4.0.6"
 rich = "13.7.1"
 trio = "0.25.0"
 
