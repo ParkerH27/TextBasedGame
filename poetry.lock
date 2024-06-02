@@ -1224,17 +1224,14 @@ full = ["numpy"]
 
 [[package]]
 name = "readchar"
-version = "4.0.5"
+version = "4.1.0"
 description = "Library to easily read single chars and key strokes"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "readchar-4.0.5-py3-none-any.whl", hash = "sha256:76ec784a5dd2afac3b7da8003329834cdd9824294c260027f8c8d2e4d0a78f43"},
-    {file = "readchar-4.0.5.tar.gz", hash = "sha256:08a456c2d7c1888cde3f4688b542621b676eb38cd6cfed7eb6cb2e2905ddc826"},
+    {file = "readchar-4.1.0-py3-none-any.whl", hash = "sha256:d163680656b34f263fb5074023db44b999c68ff31ab394445ebfd1a2a41fe9a2"},
+    {file = "readchar-4.1.0.tar.gz", hash = "sha256:6f44d1b5f0fd93bd93236eac7da39609f15df647ab9cea39f5bc7478b3344b99"},
 ]
-
-[package.dependencies]
-setuptools = ">=41.0"
 
 [[package]]
 name = "replit-python-lsp-server"
@@ -1723,4 +1720,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.13"
-content-hash = "359b8694eccda3ad03ebb950189fa64d738d2763168ef4c472f268a9d44a48f9"
+content-hash = "0c3a133c46a17271d1975aa3330a6cfb2ccd81be31b01ffeeb360dcc0c7f0d7a"
