@@ -4,7 +4,6 @@
 # ruff: noqa: PLW0603
 
 import functools
-import logging
 import os
 import random
 import sys
@@ -15,7 +14,6 @@ import readchar
 import rich
 from rich import traceback
 from rich.live import Live
-from rich.logging import RichHandler
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import track
@@ -82,10 +80,7 @@ level: int
 p = Path(os.path.realpath(__file__)).parent
 
 
-log = logging.getLogger("game")
-
-
-async def open_level(level_path: Path) -> None:
+async def open_level(level_path: Path) -> None:  # noqa: PLR0914
     """Open a level file."""
     global x
     global y
@@ -321,9 +316,7 @@ async def control(lock: Lock) -> NoReturn:
     global playerchar
 
     while True:
-        log.debug("Control")
         while is_game.is_set():
-            log.debug("on")
             rc = await trio.to_thread.run_sync(readchar.readchar)
             match rc:
                 case "w":
@@ -383,11 +376,9 @@ You Win!
     sys.exit()
 
 
-async def game() -> None:
+async def game() -> NoReturn:
     """Run the game!"""
     global level
-
-    log.info("Starting game!")
 
     message = "Establishing connection...\r"
     await tprint(message)
@@ -432,7 +423,6 @@ What do you do?
         title="Introduction",
     )
 
-    log.info("Waiting for user input...")
     match await trio.to_thread.run_sync(
         functools.partial(IntPrompt.ask, "What do you do?", choices=["1", "2", "3"]),
     ):
@@ -441,23 +431,17 @@ What do you do?
             await tprint(
                 "You follow the map and find a cave entrance. You enter the cave.",
             )
-            log.info("Waiting")
             await trio.sleep(2)
-            log.info("Loading")
             await run_level(p / "level1.txt")
         case 2:
             clear()
             await tprint("You go to sleep. You are The Real Winner!")
-            log.info("Waiting")
             await trio.sleep(2)
-            log.info("Loading")
             sys.exit()
         case 3:
             clear()
             await tprint("You decide to research about the city.")
-            log.info("Waiting")
             await trio.sleep(2)
-            log.info("Loading")
             await run_level(p / "city.txt")
 
 
@@ -489,15 +473,12 @@ def _get_random_interval() -> float:
     return random.random() / 1.75
 
 
-async def run_level(file: Path) -> None:
+async def run_level(file: Path) -> NoReturn:
     """Run a level."""
-    log.info("Getting lock")
     lock = Lock()
 
-    log.info("Opening level!")
     await open_level(file)
 
-    log.info("Starting level!")
     async with trio.open_nursery() as nursery:
         nursery.start_soon(cave_explore, lock)
         nursery.start_soon(control, lock)
@@ -519,12 +500,4 @@ def main() -> None:
 if __name__ == "__main__":
     if DEBUG:
         traceback.install()
-        logging.basicConfig(
-            level="INFO",
-            format="%(message)s",
-            datefmt="[%X]",
-            handlers=[
-                RichHandler(),
-            ],
-        )
     main()
