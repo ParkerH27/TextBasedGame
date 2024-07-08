@@ -10,8 +10,10 @@
     "editor.formatOnType": true,
     "editor.formatOnPaste": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "always",
-      "source.fixAll": "explicit"
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit",
+      "source.convertImportFormat": "explicit",
+      "source.unusedImports": "explicit"
     }
   },
   "[toml]": {
@@ -22,5 +24,7 @@
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,
   "python.analysis.autoSearchPaths": false,
-  "python.terminal.activateEnvInCurrentTerminal": true
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "ruff.showSyntaxErrors": false,
+  "ruff.nativeServer": true
 }
