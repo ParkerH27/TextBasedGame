@@ -25,7 +25,7 @@ async def image_to_binary(
     image = await trio.to_thread.run_sync(image.convert, "1")
 
     # Get the pixel data as a list of tuples
-    pixel_data: list[int] = list(image.getdata())
+    pixel_data: list[int] = list(image.getdata())  # pyright: ignore [reportArgumentType]
 
     # Get the image size
     width, height = image.size

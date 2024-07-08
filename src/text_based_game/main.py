@@ -85,29 +85,30 @@ p = Path(os.path.realpath(__file__)).parent
 log = logging.getLogger("game")
 
 
-async def open_level(level_path: Path) -> None:
+async def open_level(level_path: Path) -> None:  # noqa: PLR0914
     """Open a level file."""
-    global x
-    global y
-    global playerchar
-    global ox
-    global oy
-    global screen
-    global grid
-    global toggletrap
-    global num_rows
-    global num_cols
-    global heartcolor
-    global watercolor
-    global keycolor
-    global keystring
-    global heartstring
-    global arr
+    global \
+        x, \
+        y, \
+        playerchar, \
+        ox, \
+        oy, \
+        screen, \
+        grid, \
+        toggletrap, \
+        num_rows, \
+        num_cols, \
+        heartcolor, \
+        watercolor, \
+        keycolor, \
+        keystring, \
+        heartstring, \
+        arr
     async with await level_path.open("r") as f:
         lines = await f.readlines()
 
     num_rows = len(lines)
-    num_cols = max([len(line.strip()) for line in lines])
+    num_cols = max(len(line.strip()) for line in lines)
     lines = [line.strip().ljust(num_cols) for line in lines]
     arr = np.full((num_rows, num_cols), ".")
     for row in range(num_rows):
@@ -147,21 +148,9 @@ def scrprt(width: int) -> str:
     return heartstring + " " * (((width) + 2) - (items[0] + items[1])) + keystring
 
 
-async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0915
+async def cave_explore(lock: Lock) -> None:  # noqa: C901, PLR0915, PLR0912
     """Explore the cave."""
-    global x
-    global y
-    global ox
-    global oy
-    global smgrid
-    global keystring
-    global heartstring
-    global px
-    global py
-    global nx
-    global ny
-    global is_game
-    global screen
+    global x, y, ox, oy, smgrid, keystring, heartstring, px, py, nx, ny, is_game, screen
 
     async with lock:
         heartstring = heartcount(items[0])
@@ -300,10 +289,7 @@ What do you do?
 
 async def endroom() -> None:
     """Go to end room."""
-    global killthread
-    global level
-    global x
-    global y
+    global killthread, level, x, y
 
     await open_level(p / "endcave.txt")
 
@@ -314,11 +300,9 @@ async def endroom() -> None:
     level = 2
 
 
-async def control(lock: Lock) -> NoReturn:
+async def control(lock: Lock) -> NoReturn:  # noqa: C901
     """Control the player."""
-    global x
-    global y
-    global playerchar
+    global x, y, playerchar
 
     while True:
         log.debug("Control")
