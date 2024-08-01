@@ -27,7 +27,7 @@ typing-extensions = "^4.12.2"
 [tool.poetry.group.dev.dependencies]
 debugpy = "^1.8.2"
 poetry = "^1.8.3"
-pyright = "1.1.370"
+pyright = "1.1.374"
 replit-python-lsp-server = { extras = [
     "pyflakes",
     "rope",
