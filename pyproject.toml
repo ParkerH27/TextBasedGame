@@ -33,7 +33,7 @@ replit-python-lsp-server = { extras = [
     "rope",
     "yapf",
 ], version = "^1.5.9" }
-ruff = "^0.5.1"
+ruff = "^0.5.5"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
