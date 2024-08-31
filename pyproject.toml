@@ -16,24 +16,24 @@ levelmake = "text_based_game.levelmake:main"
 text_based_game = "text_based_game.main:main"
 
 [tool.poetry.dependencies]
-numpy = "^2.0.1"
+numpy = "^2.1.0"
 pillow = "^10.4.0"
 python = ">=3.11, <3.13"
-readchar = "^4.1.0"
-rich = "^13.7.1"
-trio = "^0.26.0"
+readchar = "^4.2.0"
+rich = "^13.8.0"
+trio = "^0.26.2"
 typing-extensions = "^4.12.2"
 
 [tool.poetry.group.dev.dependencies]
-debugpy = "^1.8.2"
+debugpy = "^1.8.5"
 poetry = "^1.8.3"
-pyright = "1.1.370"
+pyright = "1.1.378"
 replit-python-lsp-server = { extras = [
     "pyflakes",
     "rope",
     "yapf",
 ], version = "^1.5.9" }
-ruff = "^0.5.1"
+ruff = "^0.6.3"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -60,6 +60,7 @@ ignore = [
     "S311",
     "T201",
     "TD003",
+    "DOC", # Doesn't support Sphinx style yet (astral-sh/ruff#12434)
 ]
 preview = true # enables pylint rules
 select = [
@@ -76,6 +77,7 @@ convention = "pep257"
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-sort-within-sections = true
+
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
 exclude = [".cache"]
