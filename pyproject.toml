@@ -16,7 +16,7 @@ levelmake = "text_based_game.levelmake:main"
 text_based_game = "text_based_game.main:main"
 
 [tool.poetry.dependencies]
-numpy = "^2.1.0"
+numpy = "^2.1.1"
 pillow = "^10.4.0"
 python = ">=3.11, <3.13"
 readchar = "^4.2.0"
