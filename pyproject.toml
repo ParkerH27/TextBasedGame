@@ -25,7 +25,7 @@ trio = "^0.26.2"
 typing-extensions = "^4.12.2"
 
 [tool.poetry.group.dev.dependencies]
-debugpy = "^1.8.5"
+debugpy = "^1.8.6"
 poetry = "^1.8.3"
 pyright = "1.1.378"
 replit-python-lsp-server = { extras = [
